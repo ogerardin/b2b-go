@@ -8,7 +8,7 @@ import (
 	"testing"
 	"time"
 
-	dbtest "b2b-go/lib/controlled-mongo"
+	dbtest "b2b-go/lib/slave-mongo"
 )
 
 type Person struct {

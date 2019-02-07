@@ -1,4 +1,4 @@
-package controlled_mongo
+package slave_mongo
 
 import (
 	"os"

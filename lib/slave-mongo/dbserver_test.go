@@ -1,4 +1,4 @@
-package controlled_mongo_test
+package slave_mongo_test
 
 import (
 	"os"
@@ -8,7 +8,7 @@ import (
 	"github.com/globalsign/mgo"
 	. "gopkg.in/check.v1"
 
-	dbtest "b2b-go/lib/controlled-mongo"
+	dbtest "b2b-go/lib/slave-mongo"
 )
 
 type M map[string]interface{}
