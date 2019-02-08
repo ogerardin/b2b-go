@@ -3,13 +3,10 @@ package slave_mongo
 import (
 	"bytes"
 	"fmt"
-	"github.com/mattn/psutil"
 	"net"
 	"os"
 	"os/exec"
-	"runtime"
 	"strconv"
-	"syscall"
 	"time"
 
 	"github.com/globalsign/mgo"
@@ -32,6 +29,10 @@ type DBServer struct {
 	dbpath  string
 	host    string
 	tomb    tomb.Tomb
+}
+
+var terminateProcess = func(p *os.Process) {
+	p.Signal(os.Interrupt)
 }
 
 // SetPath defines the path to the directory where the database files will be
@@ -118,13 +119,8 @@ func (dbs *DBServer) Stop() {
 	}
 	if dbs.server != nil {
 		dbs.tomb.Kill(nil)
-		// Windows doesn't support Interrupt
-		if runtime.GOOS == "windows" {
-			//dbs.server.Process.Signal(os.Kill)
-			psutil.TerminateTree(dbs.server.Process.Pid, int(syscall.SIGKILL))
-		} else {
-			dbs.server.Process.Signal(os.Interrupt)
-		}
+		terminateProcess(dbs.server.Process)
+
 		select {
 		case <-dbs.tomb.Dead():
 		case <-time.After(5 * time.Second):
