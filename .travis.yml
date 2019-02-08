@@ -1,7 +1,21 @@
 language: go
 
 go:
-  - 1.11.x
+- 1.11.x
 
 env:
-  - GO111MODULE=on
+- GO111MODULE=on
+
+before_deploy:
+- go get github.com/mitchellh/gox
+- gox -output "dist/{{.Dir}}_{{.OS}}_{{.Arch}}" ./cmd/b2b
+
+deploy:
+  provider: releases
+  api_key:
+    secure: Uv8SUcFDA/h5m1HCJiHh0/7E6VKfr4M0zdPH88t0P78aKLpZJXHSfX2QgB1xK1mx17su4XEky1iG3WHsozjfs4QkjYuJdD2eBjKyhBMyFfbHgzR1ARUNlWrh37ZOJTxTe2+a48TGucGqdS6Kpg0mViYZPBSNZO34RETW2FxjsftBJd7awReOr3ZLXLXh8S6dM5VSEqX6O+MxeTCkCHMNSz0/ymuE6Gv5FKdB65bs3/V2V7yLz7I77eK7nYiBRkpzWOVZamHiZmKZ6l38QXtQLOebazsdKnmhOsvK+Vlt9fjvlIU2XsZxmTc7QUKgHCs47BQqC6ZK8Zg/00xK6pUJXJDePp3idHIwkIfqJuyHAHf53hcn42xK3pbXatsiueIjM1r6TMr3lvXx5E14xJbemX9J8TCLtxAf0vVZon7P3gEJRXa6vPZ7bpNi2+gQTBsDY4FEsZqfnUI73EP/hfcnveNdgqNBteQAe3csflf7KFwGkFsaoZj3R/kubwkQ8Hn3xX/33qGY8clrzSruS8+5GN1yTFI4qmq0dhBbCMLNxZeBd9AsBCiAsyL7GGNSN7sQBlInJknTGCE9W8E2t6a7S0N6ZCAwAuVwKWXoCMrXQSf4BhO6ur/EuVu/OowfxYTMCy1eGe9FIyk/6/fDGyY4TCdwh2OL86GpR46uoXGYrHU=
+  file_glob: true
+  file: dist/**/*
+  skip_cleanup: true
+  on:
+    tags: true
