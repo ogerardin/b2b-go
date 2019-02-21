@@ -1,8 +1,8 @@
 package main
 
 import (
-	meta "b2b-go"
 	"b2b-go/lib/usage"
+	"b2b-go/meta"
 	"flag"
 	"fmt"
 	"log"
@@ -105,7 +105,7 @@ func main() {
 	}
 
 	if options.showVersion {
-		fmt.Println(meta.Version)
+		fmt.Printf("%s %s", meta.Version, meta.GitHash)
 		return
 	}
 

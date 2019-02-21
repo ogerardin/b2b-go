@@ -24,7 +24,18 @@ func init() {
 
 // Runs dep ensure and then installs the binary.
 func Build() error {
-	return sh.Run(goexe, "install", "./...")
+	return sh.Run(goexe, "install", "-ldflags", ldFlags(), "./...")
+}
+
+func ldFlags() string {
+	gitHash, _ := getGitHash()
+	fmt.Printf("git hash is %s\n", gitHash)
+	ldFlags := fmt.Sprintf("-X b2b-go/meta.GitHash=%s", gitHash)
+	return ldFlags
+}
+
+func getGitHash() (string, error) {
+	return sh.Output("git", "rev-parse", "--short", "HEAD")
 }
 
 // Cross build using gox
