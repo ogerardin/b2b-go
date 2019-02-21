@@ -4,7 +4,7 @@
 // License, v. 2.0. If a copy of the MPL was not distributed with this file,
 // You can obtain one at https://mozilla.org/MPL/2.0/.
 
-package main
+package usage
 
 import (
 	"bytes"
@@ -28,7 +28,7 @@ func optionTable(w io.Writer, rows [][]string) {
 	tw.Flush()
 }
 
-func usageFor(fs *flag.FlagSet, usage string, extra string) func() {
+func UsageFor(fs *flag.FlagSet, usage string, extra string) func() {
 	return func() {
 		var b bytes.Buffer
 		b.WriteString("Usage:\n  " + usage + "\n")
