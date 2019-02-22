@@ -28,6 +28,7 @@ type DBServer struct {
 	server  *exec.Cmd
 	dbpath  string
 	host    string
+	port    int
 	tomb    tomb.Tomb
 }
 
@@ -42,6 +43,10 @@ func (dbs *DBServer) SetPath(dbpath string) {
 	dbs.dbpath = dbpath
 }
 
+func (dbs *DBServer) SetPort(port int) {
+	dbs.port = port
+}
+
 func (dbs *DBServer) start() {
 	if dbs.server != nil {
 		panic("DBServer already started")
@@ -50,9 +55,14 @@ func (dbs *DBServer) start() {
 		panic("DBServer.SetPath must be called before using the server")
 	}
 	mgo.SetStats(true)
-	l, err := net.Listen("tcp", "127.0.0.1:0")
+
+	// if SetPort has been called, we'll try to listen on the specified port
+	// otherwise dbs.port will be 0 and net.Listen will choose a free port that we'll obtain using l.Addr()
+	// and pass to mongod
+	listenspec := "127.0.0.1:" + strconv.Itoa(dbs.port)
+	l, err := net.Listen("tcp", listenspec)
 	if err != nil {
-		panic("unable to listen on a local address: " + err.Error())
+		panic("unable to listen on local address" + listenspec + ": " + err.Error())
 	}
 	addr := l.Addr().(*net.TCPAddr)
 	l.Close()

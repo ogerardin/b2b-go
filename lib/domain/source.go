@@ -1,7 +1,12 @@
 package domain
 
-type BackupSource struct {
-	Id      uint `bson:"_id"`
+type BackupSource interface {
+	backupSource()
+}
+
+type BackupSourceBase struct {
 	Enabled bool
 	Name    string
 }
+
+func (BackupSourceBase) backupSource() {}

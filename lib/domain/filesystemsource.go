@@ -1,6 +1,15 @@
 package domain
 
+import (
+	tr "b2b-go/lib/typeregistry"
+	"reflect"
+)
+
 type FilesystemSource struct {
-	BackupSource
+	BackupSourceBase
 	Paths []string
+}
+
+func init() {
+	tr.Register(reflect.TypeOf((*FilesystemSource)(nil)).Elem())
 }
