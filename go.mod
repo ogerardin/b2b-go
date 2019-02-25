@@ -2,6 +2,7 @@ module b2b-go
 
 require (
 	github.com/globalsign/mgo v0.0.0-20181015135952-eeefdecb41b8
+	github.com/google/uuid v1.1.0
 	github.com/kr/pretty v0.1.0 // indirect
 	github.com/magefile/mage v1.8.0
 	github.com/mattn/psutil v0.0.0-20170126005127-e6c88f1e9be6

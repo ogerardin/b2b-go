@@ -1,7 +1,7 @@
 package domain
 
 import (
-	tr "b2b-go/lib/typeregistry"
+	"b2b-go/lib/typeregistry"
 	"fmt"
 	"reflect"
 )
@@ -16,5 +16,5 @@ func (fss FilesystemSource) Desc() string {
 }
 
 func init() {
-	tr.Register(reflect.TypeOf((*FilesystemSource)(nil)).Elem())
+	typeregistry.Register(reflect.TypeOf((*FilesystemSource)(nil)).Elem())
 }
