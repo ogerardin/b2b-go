@@ -1,4 +1,4 @@
-package repo
+package mongorepository
 
 import (
 	"b2b-go/lib/domain"

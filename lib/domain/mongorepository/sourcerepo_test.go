@@ -1,4 +1,4 @@
-package repo
+package mongorepository
 
 import (
 	"b2b-go/lib/domain"
@@ -18,7 +18,7 @@ func TestSave(t *testing.T) {
 	defer server.Stop()
 	defer session.Close()
 
-	repo := NewSourceRepo(session)
+	repo := domain.NewSourceRepo(session)
 
 	source := domain.FilesystemSource{
 		BackupSourceBase: domain.BackupSourceBase{
