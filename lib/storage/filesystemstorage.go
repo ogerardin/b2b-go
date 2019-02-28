@@ -1,7 +1,7 @@
 package storage
 
 import (
-	"errors"
+	"github.com/pkg/errors"
 	"io"
 	"os"
 	"path/filepath"
@@ -11,6 +11,17 @@ var _ StorageService = (*FilesystemStorage)(nil)
 
 type FilesystemStorage struct {
 	baseDirectory string
+}
+
+func (s *FilesystemStorage) GetAllRevisions() []RevisionInfo {
+	panic("implement me")
+}
+
+func (s *FilesystemStorage) localToRemote(localpath string) string {
+	relativePath, _ := filepath.Rel(s.baseDirectory, localpath)
+	const sep = string(filepath.Separator)
+	return filepath.Join(sep, relativePath)
+
 }
 
 func (s *FilesystemStorage) GetAllFiles() ([]string, error) {
@@ -37,11 +48,13 @@ func (s *FilesystemStorage) Store(filename string) (string, error) {
 
 func (s *FilesystemStorage) StoreReader(f io.Reader, filename string) (string, error) {
 	localPath := s.remoteToLocal(filename)
+
 	dir := filepath.Dir(localPath)
 	err := os.MkdirAll(dir, os.ModeDir)
 	if err != nil {
-		return "", errors.New("Failed to create directory " + dir)
+		return "", errors.Wrapf(err, "Failed to create directory %s", dir)
 	}
+
 	target, err := os.OpenFile(localPath, os.O_CREATE|os.O_WRONLY, 0)
 	if err != nil {
 		return "", err
