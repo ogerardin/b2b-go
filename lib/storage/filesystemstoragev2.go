@@ -21,7 +21,7 @@ func (s *FilesystemStorageV2) StoreReader(f io.Reader, filename string) (string,
 	log.Printf("Writing revision to %v", localPath)
 
 	dir := filepath.Dir(localPath)
-	err := os.MkdirAll(dir, os.ModeDir)
+	err := os.MkdirAll(dir, os.ModeDir|util.OS_USER_RWX|util.OS_ALL_R)
 	if err != nil {
 		return "", errors.Wrapf(err, "Failed to create directory %s", dir)
 	}

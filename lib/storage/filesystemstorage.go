@@ -1,6 +1,7 @@
 package storage
 
 import (
+	"b2b-go/lib/util"
 	"github.com/pkg/errors"
 	"io"
 	"os"
@@ -50,18 +51,18 @@ func (s *FilesystemStorage) StoreReader(f io.Reader, filename string) (string, e
 	localPath := s.remoteToLocal(filename)
 
 	dir := filepath.Dir(localPath)
-	err := os.MkdirAll(dir, os.ModeDir)
+	err := os.MkdirAll(dir, os.ModeDir|util.OS_USER_RWX|util.OS_ALL_R)
 	if err != nil {
 		return "", errors.Wrapf(err, "Failed to create directory %s", dir)
 	}
 
-	target, err := os.OpenFile(localPath, os.O_CREATE|os.O_WRONLY, 0)
+	target, err := os.OpenFile(localPath, os.O_CREATE|os.O_WRONLY, util.OS_USER_RWX|util.OS_ALL_R)
 	if err != nil {
-		return "", err
+		return "", errors.Wrapf(err, "failed to open target file for writing: %s", localPath)
 	}
 	_, err = io.Copy(target, f)
 	if err != nil {
-		return "", err
+		return "", errors.Wrapf(err, "failed to copy to: %s", localPath)
 	}
 	return "", nil
 }

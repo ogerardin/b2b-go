@@ -51,9 +51,19 @@ func StoreAndRetrieve(t *testing.T, s StorageService) {
 }
 
 func assertMatches(t *testing.T, s StorageService, f0 string, f1 string) {
-	bytes0, _ := ioutil.ReadFile(f0)
-	reader1, _ := s.GetAsReader(f1)
-	bytes1, _ := ioutil.ReadAll(reader1)
+	bytes0, err := ioutil.ReadFile(f0)
+	if err != nil {
+		t.Fatal(err)
+	}
+	reader1, err := s.GetAsReader(f1)
+	if err != nil {
+		t.Fatal(err)
+	}
+	bytes1, err := ioutil.ReadAll(reader1)
+	if err != nil {
+		t.Fatal(err)
+	}
+
 	if bytes.Compare(bytes0, bytes1) != 0 {
 		t.Fatal("files are different")
 	}
