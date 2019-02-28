@@ -11,10 +11,18 @@ import (
 
 func getSampleFilePaths() []string {
 	result := make([]string, 0)
-	_ := filepath.Walk("../../test-fileset", func(path string, _ os.FileInfo, _ error) error {
-		result = append(result, path)
+	err := filepath.Walk("../../test-fileset", func(path string, f os.FileInfo, err error) error {
+		if err != nil {
+			panic(err)
+		}
+		if !f.IsDir() {
+			result = append(result, path)
+		}
 		return nil
 	})
+	if err != nil {
+		panic("Failed to list sample test files")
+	}
 	return result
 }
 
@@ -42,7 +50,7 @@ func StoreAndRetrieve(t *testing.T, s StorageService) {
 	}
 }
 
-func assertMatches(t testing.T, s StorageService, f0 string, f1 string) {
+func assertMatches(t *testing.T, s StorageService, f0 string, f1 string) {
 	bytes0, _ := ioutil.ReadFile(f0)
 	reader1, _ := s.GetAsReader(f1)
 	bytes1, _ := ioutil.ReadAll(reader1)

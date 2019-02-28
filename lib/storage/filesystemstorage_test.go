@@ -1,10 +1,13 @@
 package storage
 
 import (
+	"io/ioutil"
+	"os"
 	"testing"
 )
 
 func TestFilesystemStorage(t *testing.T) {
-	fss, _ := New(".")
+	d, _ := ioutil.TempDir(os.TempDir(), "mongotools-test")
+	fss, _ := New(d)
 	StoreAndRetrieve(t, fss)
 }

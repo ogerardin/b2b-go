@@ -1,6 +1,7 @@
 package storage
 
 import (
+	"errors"
 	"io"
 	"os"
 	"path/filepath"
@@ -15,7 +16,9 @@ type FilesystemStorage struct {
 func (s *FilesystemStorage) GetAllFiles() ([]string, error) {
 	result := make([]string, 0)
 	err := filepath.Walk(s.baseDirectory, func(path string, info os.FileInfo, err error) error {
-		result = append(result, path)
+		if !info.IsDir() {
+			result = append(result, path)
+		}
 		return nil
 	})
 	if err != nil {
@@ -34,6 +37,11 @@ func (s *FilesystemStorage) Store(filename string) (string, error) {
 
 func (s *FilesystemStorage) StoreReader(f io.Reader, filename string) (string, error) {
 	localPath := s.remoteToLocal(filename)
+	dir := filepath.Dir(localPath)
+	err := os.MkdirAll(dir, os.ModeDir)
+	if err != nil {
+		return "", errors.New("Failed to create directory " + dir)
+	}
 	target, err := os.OpenFile(localPath, os.O_CREATE|os.O_WRONLY, 0)
 	if err != nil {
 		return "", err
@@ -42,9 +50,13 @@ func (s *FilesystemStorage) StoreReader(f io.Reader, filename string) (string, e
 	if err != nil {
 		return "", err
 	}
+	return "", nil
 }
 
 func (s *FilesystemStorage) remoteToLocal(filename string) string {
+	filename, _ = filepath.Abs(filename)
+	volumeName := filepath.VolumeName(filename)
+	filename = filename[len(volumeName):]
 	return filepath.Join(s.baseDirectory, filename)
 }
 
