@@ -52,20 +52,38 @@ func (s *FilesystemStorageV2) getLocalPathForNextRevision(filename string) strin
 	}
 }
 
-func (s *FilesystemStorageV2) GetAllFiles() ([]string, error) {
-	_ = s.GetAllRevisions()
-	//TODO
-	return nil, nil
+func (s *FilesystemStorageV2) GetAllFiles() ([]FileInfo, error) {
+	revisions := s.GetAllRevisions()
+
+	latestRevisionByFile := make(map[string]RevisionInfo, 0)
+	for _, rev := range revisions {
+		filename := rev.filename
+		currentrev, found := latestRevisionByFile[filename]
+		if !found || rev.storedDate.After(currentrev.storedDate) {
+			latestRevisionByFile[filename] = rev
+		}
+	}
+
+	result := make([]FileInfo, 0)
+	for _, rev := range latestRevisionByFile {
+		result = append(result, *rev.getFileInfo())
+	}
+
+	return result, nil
 }
 
 func (s *FilesystemStorageV2) GetAllRevisions() []RevisionInfo {
 	result := make([]RevisionInfo, 0)
 	err := filepath.Walk(s.baseDirectory, func(path string, f os.FileInfo, err error) error {
 		if err != nil {
-			panic(err)
+			return err
 		}
 		if !f.IsDir() {
-			result = append(result, s.buildRevisionInfo(path))
+			info, err := s.buildRevisionInfo(path)
+			if err != nil {
+				return err
+			}
+			result = append(result, *info)
 		}
 		return nil
 	})
@@ -75,9 +93,19 @@ func (s *FilesystemStorageV2) GetAllRevisions() []RevisionInfo {
 	return result
 }
 
-func (s *FilesystemStorageV2) buildRevisionInfo(localpath string) RevisionInfo {
-	//TODO
-	return RevisionInfo{}
+func (s *FilesystemStorageV2) buildRevisionInfo(localpath string) (*RevisionInfo, error) {
+	info, err := s.FilesystemStorage.buildRevisionInfo(localpath)
+	if err != nil {
+		return nil, err
+	}
+
+	relpath, err := filepath.Rel(s.baseDirectory, localpath)
+	if err != nil {
+		return nil, err
+	}
+
+	info.id = relpath
+	return info, nil
 }
 
 func buildRevisionFilename(base string, revNum int) string {

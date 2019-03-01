@@ -14,6 +14,20 @@ type FilesystemStorage struct {
 	baseDirectory string
 }
 
+func (s *FilesystemStorage) buildRevisionInfo(localpath string) (*RevisionInfo, error) {
+	info, err := os.Stat(localpath)
+	if err != nil {
+		return nil, errors.Wrapf(err, "failed top get file info for %s", localpath)
+	}
+	revisionInfo := RevisionInfo{
+		id:         nil,
+		filename:   localpath,
+		size:       info.Size(),
+		storedDate: info.ModTime(),
+	}
+	return &revisionInfo, nil
+}
+
 func (s *FilesystemStorage) GetAllRevisions() []RevisionInfo {
 	panic("implement me")
 }
