@@ -8,7 +8,8 @@ import (
 type StorageService interface {
 	Store(file string) (string, error)
 	StoreReader(f io.Reader, filename string) (string, error)
-	GetAsReader(key string) (io.Reader, error)
+	GetAsReader(filename string) (io.Reader, error)
+	GetRevisionAsReader(key string) (io.Reader, error)
 	Delete(key string) error
 	GetAllFiles() ([]FileInfo, error)
 	GetAllRevisions() []RevisionInfo
@@ -25,13 +26,13 @@ type RevisionInfo struct {
 }
 
 type FileInfo struct {
-	path    string
-	deleted bool
+	Path    string
+	Deleted bool
 }
 
 func (ri *RevisionInfo) getFileInfo() *FileInfo {
 	return &FileInfo{
-		path:    ri.filename,
-		deleted: ri.deleted,
+		Path:    ri.filename,
+		Deleted: ri.deleted,
 	}
 }

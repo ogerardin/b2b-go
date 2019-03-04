@@ -38,9 +38,13 @@ func StoreAndRetrieveTest(t *testing.T, s StorageService) {
 		}
 	}
 
-	paths1, err := s.GetAllFiles()
+	paths1 := make([]string, 0)
+	fis, err := s.GetAllFiles()
 	if err != nil {
 		t.Fatal(err)
+	}
+	for _, fi := range fis {
+		paths1 = append(paths1, fi.Path)
 	}
 
 	sort.Strings(paths0)
@@ -91,7 +95,7 @@ func assertStoredRevisionMatchesFile(t *testing.T, s StorageService, f0 string, 
 	if err != nil {
 		t.Fatal(err)
 	}
-	reader1, err := s.GetAsReader(id)
+	reader1, err := s.GetRevisionAsReader(id)
 	if err != nil {
 		t.Fatal(err)
 	}
@@ -111,10 +115,14 @@ func copyFile(s string, t string) {
 	if err != nil {
 		panic(err)
 	}
+	defer fs.Close()
+
 	ft, err := os.Create(t)
 	if err != nil {
 		panic(err)
 	}
+	defer ft.Close()
+
 	_, err = io.Copy(ft, fs)
 	if err != nil {
 		panic(err)

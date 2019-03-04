@@ -14,13 +14,17 @@ type FilesystemStorage struct {
 	baseDirectory string
 }
 
+func (s *FilesystemStorage) GetRevisionAsReader(key string) (io.Reader, error) {
+	panic("not implemented")
+}
+
 func (s *FilesystemStorage) buildRevisionInfo(localpath string) (*RevisionInfo, error) {
 	info, err := os.Stat(localpath)
 	if err != nil {
 		return nil, errors.Wrapf(err, "failed top get file info for %s", localpath)
 	}
 	revisionInfo := RevisionInfo{
-		id:         nil,
+		id:         "",
 		filename:   localpath,
 		size:       info.Size(),
 		storedDate: info.ModTime(),
@@ -39,11 +43,15 @@ func (s *FilesystemStorage) localToRemote(localpath string) string {
 
 }
 
-func (s *FilesystemStorage) GetAllFiles() ([]string, error) {
-	result := make([]string, 0)
+func (s *FilesystemStorage) GetAllFiles() ([]FileInfo, error) {
+	result := make([]FileInfo, 0)
 	err := filepath.Walk(s.baseDirectory, func(path string, info os.FileInfo, err error) error {
 		if !info.IsDir() {
-			result = append(result, path)
+			fileInfo := FileInfo{
+				Path:    path,
+				Deleted: false,
+			}
+			result = append(result, fileInfo)
 		}
 		return nil
 	})

@@ -30,12 +30,33 @@ func (s *FilesystemStorageV2) StoreReader(f io.Reader, filename string) (string,
 	if err != nil {
 		return "", errors.Wrapf(err, "Failed to create local file %s", localPath)
 	}
+	defer target.Close()
+
 	_, err = io.Copy(target, f)
 	if err != nil {
 		return "", errors.Wrapf(err, "Failed to copy bytes to local file")
 	}
 	revisionId, _ := filepath.Rel(s.baseDirectory, localPath)
 	return revisionId, nil
+}
+
+func (s *FilesystemStorageV2) GetRevisionAsReader(key string) (io.Reader, error) {
+	info := s.getRevisionInfo(key)
+	localPath := s.getLocalPath(info)
+	return os.Open(localPath)
+}
+
+func (s *FilesystemStorageV2) getLocalPath(info *RevisionInfo) string {
+	return filepath.Join(s.baseDirectory, info.id)
+}
+
+func (s *FilesystemStorageV2) getRevisionInfo(key string) *RevisionInfo {
+	localPath := filepath.Join(s.baseDirectory, key)
+	info, err := s.buildRevisionInfo(localPath)
+	if err != nil {
+		panic(err)
+	}
+	return info
 }
 
 func (s *FilesystemStorageV2) getLocalPathForNextRevision(filename string) string {
@@ -46,7 +67,7 @@ func (s *FilesystemStorageV2) getLocalPathForNextRevision(filename string) strin
 	for revNum := 0; ; revNum++ {
 		revisionFilename := buildRevisionFilename(base, revNum)
 		revisionFilePath := filepath.Join(dir, revisionFilename)
-		if exists, _ := util.FileExists(revisionFilePath); exists {
+		if exists, _ := util.FileExists(revisionFilePath); !exists {
 			return revisionFilePath
 		}
 	}
@@ -70,6 +91,16 @@ func (s *FilesystemStorageV2) GetAllFiles() ([]FileInfo, error) {
 	}
 
 	return result, nil
+}
+
+func (s *FilesystemStorageV2) Store(filename string) (string, error) {
+	f, err := os.Open(filename)
+	if err != nil {
+		return "", err
+	}
+	defer f.Close()
+
+	return s.StoreReader(f, filename)
 }
 
 func (s *FilesystemStorageV2) GetAllRevisions() []RevisionInfo {
