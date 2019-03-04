@@ -9,7 +9,7 @@ import (
 	"testing"
 )
 
-func TestSave(t *testing.T) {
+func TestSave2(t *testing.T) {
 	d, _ := ioutil.TempDir(os.TempDir(), "mongotools-test")
 	server := slave_mongo.DBServer{}
 	server.SetPath(d)
@@ -18,7 +18,7 @@ func TestSave(t *testing.T) {
 	defer server.Stop()
 	defer session.Close()
 
-	repo := domain.NewSourceRepo(session)
+	repo := NewSourceRepo(session)
 
 	source := domain.FilesystemSource{
 		BackupSourceBase: domain.BackupSourceBase{
@@ -48,13 +48,13 @@ func TestSave(t *testing.T) {
 	if err != nil {
 		t.Fatal(err)
 	}
-	t.Logf("loaded %s", (*loadedSource1).Desc())
+	t.Logf("loaded %s", (loadedSource1).Desc())
 
 	loadedSource2, err := repo.GetById(id2)
 	if err != nil {
 		t.Fatal(err)
 	}
-	t.Logf("loaded %s", (*loadedSource2).Desc())
+	t.Logf("loaded %s", (loadedSource2).Desc())
 
 	//time.Sleep(time.Hour)
 
