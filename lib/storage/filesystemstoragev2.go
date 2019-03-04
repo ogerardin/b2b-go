@@ -111,3 +111,10 @@ func (s *FilesystemStorageV2) buildRevisionInfo(localpath string) (*RevisionInfo
 func buildRevisionFilename(base string, revNum int) string {
 	return fmt.Sprintf("%s#%d", base, revNum)
 }
+
+func NewV2(baseDirectory string) (*FilesystemStorageV2, error) {
+	v1, _ := New(baseDirectory)
+	return &FilesystemStorageV2{
+		*v1,
+	}, nil
+}

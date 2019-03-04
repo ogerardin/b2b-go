@@ -10,7 +10,7 @@ type StorageService interface {
 	StoreReader(f io.Reader, filename string) (string, error)
 	GetAsReader(key string) (io.Reader, error)
 	Delete(key string) error
-	GetAllFiles() ([]string, error)
+	GetAllFiles() ([]FileInfo, error)
 	GetAllRevisions() []RevisionInfo
 	localToRemote(path string) string
 	buildRevisionInfo(localpath string) (*RevisionInfo, error)

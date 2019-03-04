@@ -6,8 +6,8 @@ import (
 	"testing"
 )
 
-func TestFilesystemStorage(t *testing.T) {
+func TestFilesystemStoragev2(t *testing.T) {
 	d, _ := ioutil.TempDir(os.TempDir(), "mongotools-test")
-	fss, _ := New(d)
-	StoreAndRetrieveTest(t, fss)
+	fss, _ := NewV2(d)
+	StoreAndretrieveMultipleRevisionsTest(t, fss)
 }
