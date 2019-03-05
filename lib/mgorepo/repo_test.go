@@ -1,4 +1,4 @@
-package genericrepo
+package mgorepo
 
 import (
 	slave_mongo "b2b-go/lib/slave-mongo"

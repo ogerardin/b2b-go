@@ -1,4 +1,4 @@
-package genericrepo
+package mgorepo
 
 import (
 	"b2b-go/lib/typeregistry"
@@ -35,7 +35,14 @@ func (r *Repo) SaveNew(source interface{}) (interface{}, error) {
 	coll := session.DB("").C(r.coll)
 
 	// The value is saved as a wrapper value, with V being the actual value and T being its type key.
-	t := reflect.ValueOf(source).Elem().Type()
+	value := reflect.ValueOf(source)
+	var t reflect.Type
+	if value.Kind() == reflect.Interface || value.Kind() == reflect.Ptr {
+		t = value.Elem().Type()
+	} else {
+		t = value.Type()
+	}
+
 	wrapper := wrapper{
 		Id: bson.NewObjectId(),
 		T:  typeregistry.GetKey(t),

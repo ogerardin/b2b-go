@@ -9,6 +9,8 @@ import (
 //Represents a remote peer backup destination.
 type PeerTarget struct {
 	BackupTargetBase
+	Hostname string
+	Port     int
 }
 
 func (t PeerTarget) Desc() string {

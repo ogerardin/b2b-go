@@ -1,4 +1,4 @@
-package mongorepository
+package repo
 
 import (
 	"b2b-go/lib/domain"
@@ -9,11 +9,11 @@ import (
 	"testing"
 )
 
-func TestSave2(t *testing.T) {
+func TestSourceRepo(t *testing.T) {
 	d, _ := ioutil.TempDir(os.TempDir(), "mongotools-test")
 	server := slave_mongo.DBServer{}
 	server.SetPath(d)
-	server.SetPort(27017)
+	//server.SetPort(27017)
 	session := server.Session()
 	defer server.Stop()
 	defer session.Close()
