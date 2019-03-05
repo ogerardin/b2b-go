@@ -52,7 +52,7 @@ type TestRepo struct {
 
 func NewTestRepo(s *mgo.Session) *TestRepo {
 	return &TestRepo{
-		NewRepo(s, "test"),
+		New(s, "test"),
 	}
 }
 

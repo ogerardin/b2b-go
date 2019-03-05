@@ -20,7 +20,7 @@ type wrapper struct {
 	V  interface{}
 }
 
-func NewRepo(s *mgo.Session, coll string) *Repo {
+func New(s *mgo.Session, coll string) *Repo {
 	repo := Repo{
 		session: s,
 		coll:    coll,

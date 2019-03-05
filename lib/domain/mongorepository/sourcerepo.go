@@ -17,7 +17,7 @@ type SourceRepo interface {
 
 func NewSourceRepo(s *mgo.Session) *SourceRepoImpl {
 	return &SourceRepoImpl{
-		*genericrepo.NewRepo(s, "sources"),
+		*genericrepo.New(s, "sources"),
 	}
 }
 
