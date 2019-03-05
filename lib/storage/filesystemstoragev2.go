@@ -26,7 +26,7 @@ func (s *FilesystemStorageV2) StoreReader(f io.Reader, filename string) (string,
 		return "", errors.Wrapf(err, "Failed to create directory %s", dir)
 	}
 
-	target, err := os.OpenFile(localPath, os.O_CREATE|os.O_WRONLY, 0)
+	target, err := os.Create(localPath)
 	if err != nil {
 		return "", errors.Wrapf(err, "Failed to create local file %s", localPath)
 	}
