@@ -34,8 +34,7 @@ func (r *Repo) SaveNew(source interface{}) (interface{}, error) {
 
 	coll := session.DB("").C(r.coll)
 
-	// The value is saved as a wrapper value, with V being the value and T being its type key.
-	// The type must have been previously registered with typeregistry.Register
+	// The value is saved as a wrapper value, with V being the actual value and T being its type key.
 	t := reflect.ValueOf(source).Elem().Type()
 	wrapper := wrapper{
 		Id: bson.NewObjectId(),
@@ -62,13 +61,14 @@ func (r *Repo) GetById(id interface{}) (interface{}, error) {
 	//tv := reflect.TypeOf(wrapper.V)
 	//fmt.Println(tv)
 
-	// obtain Type from from its key from the type registry
+	// Obtain Type from from its key from the type registry
+	// The type must have been previously registered with typeregistry.Register
 	t := typeregistry.GetType(wrapper.T)
 	if t == nil {
-		log.Panicf("Failed to get type from key %s - did you forget to register the type?", wrapper.T)
+		log.Panicf("Unknown type key '%s' - did you forget to register the type?", wrapper.T)
 	}
 
-	// get a pointer to a new value of this type
+	// get A pointer to A new value of this type
 	pt := reflect.New(t)
 
 	// populate value from wrapper.V

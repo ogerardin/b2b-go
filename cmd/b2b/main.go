@@ -1,6 +1,7 @@
 package main
 
 import (
+	"b2b-go/lib/rest"
 	"b2b-go/lib/usage"
 	"b2b-go/meta"
 	"flag"
@@ -114,11 +115,13 @@ func main() {
 		return
 	}
 
-	syncthingMain(options)
+	b2bMain(options)
 }
 
-func syncthingMain(runtimeOptions RuntimeOptions) {
+func b2bMain(runtimeOptions RuntimeOptions) {
 	setupSignalHandling()
+
+	go rest.StartApi()
 
 	code := <-stop
 
