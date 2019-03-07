@@ -2,35 +2,36 @@ package repo
 
 import (
 	"b2b-go/lib/domain"
+	"b2b-go/lib/runtime"
 	"b2b-go/lib/slave-mongo"
 	"fmt"
-	"io/ioutil"
-	"os"
+	"github.com/globalsign/mgo"
+	"log"
 	"testing"
 )
 
 func TestSourceRepo(t *testing.T) {
-	d, _ := ioutil.TempDir(os.TempDir(), "mongotools-test")
-	server := slave_mongo.DBServer{}
-	server.SetPath(d)
-	//server.SetPort(27017)
-	session := server.Session()
-	defer server.Stop()
-	defer session.Close()
 
+	err := runtime.Container.Invoke(func(dbs *slave_mongo.DBServer) {
+		session := dbs.Session()
+		defer session.Close()
+
+		testSourceRepoWithSession(t, session)
+	})
+	if err != nil {
+		log.Panicf("Failed to invoke test: %v", err)
+	}
+
+}
+
+func testSourceRepoWithSession(t *testing.T, session *mgo.Session) {
 	repo := NewSourceRepo(session)
-
 	source := domain.FilesystemSource{
 		BackupSourceBase: domain.BackupSourceBase{
 			Name: "source 1",
 		},
 		Paths: []string{"temp1"},
 	}
-	id1, err := repo.SaveNew(&source)
-	if err != nil {
-		t.Fatal(err)
-	}
-	fmt.Println(id1)
 
 	source2 := domain.FilesystemSource{
 		BackupSourceBase: domain.BackupSourceBase{
@@ -38,24 +39,29 @@ func TestSourceRepo(t *testing.T) {
 		},
 		Paths: []string{"temp2", "temp3"},
 	}
-	id2, err := repo.SaveNew(&source2)
+
+	id1 := saveSource(t, repo, source)
+	id2 := saveSource(t, repo, source2)
+
+	loadSource(t, repo, id1)
+	loadSource(t, repo, id2)
+
+	//time.Sleep(time.Hour)
+}
+
+func saveSource(t *testing.T, repo SourceRepo, source domain.BackupSource) interface{} {
+	id, err := repo.SaveNew(source)
 	if err != nil {
 		t.Fatal(err)
 	}
-	fmt.Println(id2)
+	fmt.Println(id)
+	return id
+}
 
-	loadedSource1, err := repo.GetById(id1)
+func loadSource(t *testing.T, repo SourceRepo, id interface{}) {
+	loadedSource1, err := repo.GetById(id)
 	if err != nil {
 		t.Fatal(err)
 	}
 	t.Logf("loaded %s", (loadedSource1).Desc())
-
-	loadedSource2, err := repo.GetById(id2)
-	if err != nil {
-		t.Fatal(err)
-	}
-	t.Logf("loaded %s", (loadedSource2).Desc())
-
-	//time.Sleep(time.Hour)
-
 }

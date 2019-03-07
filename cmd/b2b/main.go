@@ -2,10 +2,10 @@ package main
 
 import (
 	"b2b-go/lib/rest"
+	"b2b-go/lib/runtime"
 	"b2b-go/meta"
 	"flag"
 	"fmt"
-	"go.uber.org/dig"
 	"log"
 	"os"
 	"os/signal"
@@ -27,29 +27,25 @@ var (
 
 func main() {
 
-	container := dig.New()
+	runtime.InitMainContainer(false)
 
-	container.Provide(func() RuntimeOptions {
-		return parseCommandLineOptions()
-	})
-
-	container.Invoke(func(options RuntimeOptions) {
+	runtime.Container.Invoke(func(options runtime.Options) {
 		b2bMain(options)
 	})
 
 }
 
-func b2bMain(options RuntimeOptions) {
-	if options.hideConsole {
+func b2bMain(options runtime.Options) {
+	if options.HideConsole {
 		//osutil.HideConsole()
 	}
 
-	if options.showVersion {
+	if options.ShowVersion {
 		fmt.Printf("%s %s", meta.Version, meta.GitHash)
 		return
 	}
 
-	if options.showHelp {
+	if options.ShowHelp {
 		flag.Usage()
 		return
 	}
@@ -63,7 +59,7 @@ func b2bMain(options RuntimeOptions) {
 
 	log.Print("Exiting")
 
-	if options.cpuProfile {
+	if options.CpuProfile {
 		pprof.StopCPUProfile()
 	}
 

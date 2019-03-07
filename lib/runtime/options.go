@@ -1,4 +1,4 @@
-package main
+package runtime
 
 import (
 	"b2b-go/lib/usage"
@@ -8,11 +8,11 @@ import (
 	"runtime"
 )
 
-type RuntimeOptions struct {
+type Options struct {
 	confDir        string
 	resetDatabase  bool
 	resetDeltaIdxs bool
-	showVersion    bool
+	ShowVersion    bool
 	showPaths      bool
 	showDeviceId   bool
 	doUpgrade      bool
@@ -20,7 +20,7 @@ type RuntimeOptions struct {
 	upgradeTo      string
 	noBrowser      bool
 	browserOnly    bool
-	hideConsole    bool
+	HideConsole    bool
 	logFile        string
 	auditEnabled   bool
 	auditFile      string
@@ -33,23 +33,23 @@ type RuntimeOptions struct {
 	noRestart      bool
 	profiler       string
 	assetDir       string
-	cpuProfile     bool
+	CpuProfile     bool
 	stRestarting   bool
 	logFlags       int
-	showHelp       bool
+	ShowHelp       bool
 }
 
-func parseCommandLineOptions() RuntimeOptions {
+func parseCommandLineOptions() Options {
 	options := defaultRuntimeOptions()
 
 	flag.StringVar(&options.confDir, "home", "", "Set configuration directory")
-	flag.BoolVar(&options.showVersion, "version", false, "Show version")
-	flag.BoolVar(&options.showHelp, "help", false, "Show this help")
+	flag.BoolVar(&options.ShowVersion, "version", false, "Show version")
+	flag.BoolVar(&options.ShowHelp, "help", false, "Show this help")
 	flag.BoolVar(&options.showDeviceId, "device-id", false, "Show the device ID")
 	flag.BoolVar(&options.verbose, "verbose", false, "Print verbose log output")
 	if runtime.GOOS == "windows" {
 		// Allow user to hide the console window
-		flag.BoolVar(&options.hideConsole, "no-console", false, "Hide console window")
+		flag.BoolVar(&options.HideConsole, "no-console", false, "Hide console window")
 	}
 
 	flag.Usage = usage.UsageFor(flag.CommandLine, "b2b [options]", "")
@@ -63,8 +63,8 @@ func parseCommandLineOptions() RuntimeOptions {
 	return options
 }
 
-func defaultRuntimeOptions() RuntimeOptions {
-	options := RuntimeOptions{
+func defaultRuntimeOptions() Options {
+	options := Options{
 		logFlags: log.Ltime,
 	}
 
