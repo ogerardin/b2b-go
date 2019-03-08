@@ -8,16 +8,19 @@ import (
 	"flag"
 	"fmt"
 	"github.com/gin-gonic/gin"
-	"github.com/pkg/errors"
 	"go.uber.org/fx"
 	"log"
+	"os"
 	"runtime/pprof"
 )
 
 func main() {
 
+	options := runtime.ParseCommandLineOptions()
+	handleUsage(options)
+
 	app := fx.New(
-		fx.Provide(runtime.OptionsProvider),
+		fx.Provide(func() runtime.Options { return options }),
 		fx.Provide(rest.GinProvider),
 
 		fx.Invoke(handleOptions),
@@ -27,21 +30,22 @@ func main() {
 	app.Run()
 }
 
-func handleOptions(lc fx.Lifecycle, options runtime.Options) error {
-	if options.HideConsole {
-		//osutil.HideConsole()
-	}
-
+func handleUsage(options runtime.Options) {
 	if options.ShowVersion {
 		fmt.Printf("%s %s", meta.Version, meta.GitHash)
-		//FIXME not an error, just abort app start
-		return errors.New("done")
+		os.Exit(0)
 	}
 
 	if options.ShowHelp {
 		flag.Usage()
-		//FIXME not an error, just abort app start
-		return errors.New("done")
+		os.Exit(0)
+	}
+
+}
+
+func handleOptions(lc fx.Lifecycle, options runtime.Options) error {
+	if options.HideConsole {
+		//osutil.HideConsole()
 	}
 
 	lc.Append(fx.Hook{

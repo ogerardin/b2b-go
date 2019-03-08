@@ -39,11 +39,7 @@ type Options struct {
 	ShowHelp       bool
 }
 
-func OptionsProvider() Options {
-	return parseCommandLineOptions()
-}
-
-func parseCommandLineOptions() Options {
+func ParseCommandLineOptions() Options {
 	options := defaultRuntimeOptions()
 
 	flag.StringVar(&options.confDir, "home", "", "Set configuration directory")
