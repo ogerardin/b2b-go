@@ -4,84 +4,67 @@ import (
 	"b2b-go/lib/rest"
 	"b2b-go/lib/runtime"
 	"b2b-go/meta"
+	"context"
 	"flag"
 	"fmt"
+	"github.com/gin-gonic/gin"
+	"github.com/pkg/errors"
+	"go.uber.org/fx"
 	"log"
-	"os"
-	"os/signal"
 	"runtime/pprof"
-	"syscall"
-)
-
-const (
-	exitSuccess            = 0
-	exitError              = 1
-	exitNoUpgradeAvailable = 2
-	exitRestarting         = 3
-	exitUpgrading          = 4
-)
-
-var (
-	stop = make(chan int)
 )
 
 func main() {
 
-	runtime.InitMainContainer(false)
+	app := fx.New(
+		fx.Provide(runtime.OptionsProvider),
+		fx.Provide(rest.GinProvider),
 
-	runtime.Container.Invoke(func(options runtime.Options) {
-		b2bMain(options)
-	})
+		fx.Invoke(handleOptions),
+		fx.Invoke(startGin),
+	)
 
+	app.Run()
 }
 
-func b2bMain(options runtime.Options) {
+func handleOptions(lc fx.Lifecycle, options runtime.Options) error {
 	if options.HideConsole {
 		//osutil.HideConsole()
 	}
 
 	if options.ShowVersion {
 		fmt.Printf("%s %s", meta.Version, meta.GitHash)
-		return
+		return errors.New("done")
 	}
 
 	if options.ShowHelp {
 		flag.Usage()
-		return
-	}
-	setupSignalHandling()
-
-	go rest.StartApi()
-
-	code := <-stop
-
-	//mainService.Stop()
-
-	log.Print("Exiting")
-
-	if options.CpuProfile {
-		pprof.StopCPUProfile()
+		return errors.New("done")
 	}
 
-	os.Exit(code)
+	lc.Append(fx.Hook{
+		OnStop: func(c context.Context) error {
+			if options.CpuProfile {
+				pprof.StopCPUProfile()
+			}
+			return nil
+		},
+	})
+
+	return nil
 }
 
-func setupSignalHandling() {
-	// Exit cleanly with "restarting" code on SIGHUP.
-	restartSign := make(chan os.Signal, 1)
-	sigHup := syscall.Signal(1)
-	signal.Notify(restartSign, sigHup)
-	go func() {
-		<-restartSign
-		stop <- exitRestarting
-	}()
+func startGin(lc fx.Lifecycle, g *gin.Engine) {
 
-	// Exit with "success" code (no restart) on INT/TERM
-	stopSign := make(chan os.Signal, 1)
-	sigTerm := syscall.Signal(15)
-	signal.Notify(stopSign, os.Interrupt, sigTerm)
-	go func() {
-		<-stopSign
-		stop <- exitSuccess
-	}()
+	lc.Append(fx.Hook{
+		OnStart: func(c context.Context) error {
+			go g.Run(":8080")
+			return nil
+		},
+		OnStop: func(c context.Context) error {
+			log.Print("Stopping")
+			return nil
+		},
+	})
+
 }

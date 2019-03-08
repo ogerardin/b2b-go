@@ -39,6 +39,10 @@ type Options struct {
 	ShowHelp       bool
 }
 
+func OptionsProvider() Options {
+	return parseCommandLineOptions()
+}
+
 func parseCommandLineOptions() Options {
 	options := defaultRuntimeOptions()
 
