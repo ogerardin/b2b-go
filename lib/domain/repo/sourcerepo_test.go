@@ -3,25 +3,23 @@ package repo
 import (
 	"b2b-go/lib/domain"
 	"b2b-go/lib/runtime"
-	"b2b-go/lib/slave-mongo"
 	"fmt"
 	"github.com/globalsign/mgo"
-	"log"
+	"go.uber.org/fx"
+	"go.uber.org/fx/fxtest"
 	"testing"
 )
 
 func TestSourceRepo(t *testing.T) {
+	testApp := fxtest.New(t,
+		fx.Provide(func() *testing.T { return t }),
+		fx.Provide(runtime.TestDBServerProvider),
+		fx.Provide(runtime.SessionProvider),
 
-	err := runtime.Container.Invoke(func(dbs *slave_mongo.DBServer) {
-		session := dbs.Session()
-		defer session.Close()
-
-		testSourceRepoWithSession(t, session)
-	})
-	if err != nil {
-		log.Panicf("Failed to invoke test: %v", err)
-	}
-
+		fx.Invoke(testSourceRepoWithSession),
+	)
+	testApp.RequireStart()
+	testApp.RequireStop()
 }
 
 func testSourceRepoWithSession(t *testing.T, session *mgo.Session) {

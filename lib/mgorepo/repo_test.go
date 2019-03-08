@@ -1,11 +1,11 @@
 package mgorepo
 
 import (
-	slave_mongo "b2b-go/lib/slave-mongo"
+	"b2b-go/lib/runtime"
 	"b2b-go/lib/typeregistry"
 	"github.com/globalsign/mgo"
-	"io/ioutil"
-	"os"
+	"go.uber.org/fx"
+	"go.uber.org/fx/fxtest"
 	"reflect"
 	"testing"
 )
@@ -67,17 +67,19 @@ func (r *TestRepo) GetById(id interface{}) (I, error) {
 }
 
 func TestGenericRepo(t *testing.T) {
-	d, _ := ioutil.TempDir(os.TempDir(), "mongotools-test")
-	server := slave_mongo.DBServer{}
-	server.SetPath(d)
-	//server.SetPort(27017)
-	session := server.Session()
-	defer server.Wipe()
-	defer server.Stop()
-	defer session.Close()
+	testApp := fxtest.New(t,
+		fx.Provide(func() *testing.T { return t }),
+		fx.Provide(runtime.TestDBServerProvider),
+		fx.Provide(runtime.SessionProvider),
 
+		fx.Invoke(testWithSession),
+	)
+	testApp.RequireStart()
+	testApp.RequireStop()
+}
+
+func testWithSession(t *testing.T, session *mgo.Session) {
 	repo := NewTestRepo(session)
-
 	instanceB := B{
 		A: A{
 			field1: 1,
@@ -88,7 +90,6 @@ func TestGenericRepo(t *testing.T) {
 		t.Fatal(err)
 	}
 	t.Log(id1)
-
 	instanceC := C{
 		A: A{
 			field1: 2,
@@ -99,19 +100,15 @@ func TestGenericRepo(t *testing.T) {
 		t.Fatal(err)
 	}
 	t.Log(id2)
-
 	loaded1, err := repo.GetById(id1)
 	if err != nil {
 		t.Fatal(err)
 	}
 	t.Log(loaded1.String())
-
 	loaded2, err := repo.GetById(id2)
 	if err != nil {
 		t.Fatal(err)
 	}
 	t.Log(loaded2.String())
-
 	//time.Sleep(time.Hour)
-
 }

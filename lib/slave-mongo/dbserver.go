@@ -47,9 +47,10 @@ func (dbs *DBServer) SetPort(port int) {
 	dbs.port = port
 }
 
-func (dbs *DBServer) start() {
+func (dbs *DBServer) Start() {
 	if dbs.server != nil {
-		panic("DBServer already started")
+		//log.Print("DBServer already started")
+		return
 	}
 	if dbs.dbpath == "" {
 		panic("DBServer.SetPath must be called before using the server")
@@ -146,7 +147,7 @@ func (dbs *DBServer) Stop() {
 // The first Session obtained from a DBServer will start it.
 func (dbs *DBServer) Session() *mgo.Session {
 	if dbs.server == nil {
-		dbs.start()
+		dbs.Start()
 	}
 	if dbs.session == nil {
 		mgo.ResetStats()

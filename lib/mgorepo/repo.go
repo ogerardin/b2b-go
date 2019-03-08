@@ -75,7 +75,7 @@ func (r *Repo) GetById(id interface{}) (interface{}, error) {
 		log.Panicf("Unknown type key '%s' - did you forget to register the type?", wrapper.T)
 	}
 
-	// get A pointer to A new value of this type
+	// get a pointer to a new value of this type
 	pt := reflect.New(t)
 
 	// populate value from wrapper.V

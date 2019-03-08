@@ -34,11 +34,13 @@ func handleOptions(lc fx.Lifecycle, options runtime.Options) error {
 
 	if options.ShowVersion {
 		fmt.Printf("%s %s", meta.Version, meta.GitHash)
+		//FIXME not an error, just abort app start
 		return errors.New("done")
 	}
 
 	if options.ShowHelp {
 		flag.Usage()
+		//FIXME not an error, just abort app start
 		return errors.New("done")
 	}
 
