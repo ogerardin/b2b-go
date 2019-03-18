@@ -5,7 +5,7 @@ import (
 	"github.com/gin-gonic/gin"
 )
 
-func registerAppRoutes(g *gin.Engine) gin.IRoutes {
+func RegisterAppRoutes(g *gin.Engine) gin.IRoutes {
 	return g.GET("/app/version", func(c *gin.Context) {
 		c.String(200, meta.Version)
 	})

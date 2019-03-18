@@ -6,6 +6,6 @@ import (
 
 func GinProvider() *gin.Engine {
 	g := gin.Default()
-	registerAppRoutes(g)
+	//registerAppRoutes(g)
 	return g
 }

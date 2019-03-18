@@ -24,6 +24,7 @@ func main() {
 		fx.Provide(rest.GinProvider),
 
 		fx.Invoke(handleOptions),
+		fx.Invoke(rest.RegisterAppRoutes),
 		fx.Invoke(startGin),
 	)
 

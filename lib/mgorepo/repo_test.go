@@ -80,6 +80,7 @@ func TestGenericRepo(t *testing.T) {
 
 func testWithSession(t *testing.T, session *mgo.Session) {
 	repo := NewTestRepo(session)
+
 	instanceB := B{
 		A: A{
 			field1: 1,
@@ -90,6 +91,7 @@ func testWithSession(t *testing.T, session *mgo.Session) {
 		t.Fatal(err)
 	}
 	t.Log(id1)
+
 	instanceC := C{
 		A: A{
 			field1: 2,
@@ -100,11 +102,20 @@ func testWithSession(t *testing.T, session *mgo.Session) {
 		t.Fatal(err)
 	}
 	t.Log(id2)
+
+	all, err := repo.GetAll()
+	t.Logf("Found %d items: %v", len(all), all)
+
+	for _, v := range all {
+		var _ = v.(I)
+	}
+
 	loaded1, err := repo.GetById(id1)
 	if err != nil {
 		t.Fatal(err)
 	}
 	t.Log(loaded1.String())
+
 	loaded2, err := repo.GetById(id2)
 	if err != nil {
 		t.Fatal(err)
