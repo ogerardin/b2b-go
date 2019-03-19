@@ -15,7 +15,7 @@ type I interface {
 }
 
 type A struct {
-	field1 int
+	Field1 int
 }
 
 func (A) String() string {
@@ -24,7 +24,7 @@ func (A) String() string {
 
 type B struct {
 	A
-	field2 int
+	Field2 int
 }
 
 func (B) String() string {
@@ -33,7 +33,7 @@ func (B) String() string {
 
 type C struct {
 	A
-	field3 int
+	Field3 int
 }
 
 func (C) String() string {
@@ -83,7 +83,7 @@ func testWithSession(t *testing.T, session *mgo.Session) {
 
 	instanceB := B{
 		A: A{
-			field1: 1,
+			Field1: 1,
 		},
 	}
 	id1, err := repo.SaveNew(&instanceB)
@@ -94,7 +94,7 @@ func testWithSession(t *testing.T, session *mgo.Session) {
 
 	instanceC := C{
 		A: A{
-			field1: 2,
+			Field1: 2,
 		},
 	}
 	id2, err := repo.SaveNew(&instanceC)
