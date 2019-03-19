@@ -9,7 +9,7 @@ import (
 
 type PeerSource struct {
 	BackupSourceBase
-	remoteCOmputerId uuid.UUID
+	remoteComputerId uuid.UUID
 }
 
 func (ps PeerSource) Desc() string {

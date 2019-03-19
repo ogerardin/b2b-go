@@ -1,8 +1,7 @@
 package main
 
 import (
-	"b2b-go/lib/rest"
-	"b2b-go/lib/runtime"
+	app2 "b2b-go/app"
 	"b2b-go/meta"
 	"context"
 	"flag"
@@ -16,22 +15,22 @@ import (
 
 func main() {
 
-	options := runtime.ParseCommandLineOptions()
+	options := app2.ParseCommandLineOptions()
 	handleUsage(options)
 
 	app := fx.New(
-		fx.Provide(func() runtime.Options { return options }),
-		fx.Provide(rest.GinProvider),
+		fx.Provide(func() app2.Options { return options }),
+		fx.Provide(app2.GinProvider),
 
 		fx.Invoke(handleOptions),
-		fx.Invoke(rest.RegisterAppRoutes),
+		fx.Invoke(app2.RegisterAppRoutes),
 		fx.Invoke(startGin),
 	)
 
 	app.Run()
 }
 
-func handleUsage(options runtime.Options) {
+func handleUsage(options app2.Options) {
 	if options.ShowVersion {
 		fmt.Printf("%s %s", meta.Version, meta.GitHash)
 		os.Exit(0)
@@ -44,7 +43,7 @@ func handleUsage(options runtime.Options) {
 
 }
 
-func handleOptions(lc fx.Lifecycle, options runtime.Options) error {
+func handleOptions(lc fx.Lifecycle, options app2.Options) error {
 	if options.HideConsole {
 		//osutil.HideConsole()
 	}

@@ -30,32 +30,31 @@ func New(s *mgo.Session, coll string) *Repo {
 	return &repo
 }
 
-func (r *Repo) SaveNew(source interface{}) (interface{}, error) {
+func (r *Repo) SaveNew(item interface{}) (bson.ObjectId, error) {
 	session := r.session.Copy()
 	defer session.Close()
 
 	coll := session.DB("").C(r.coll)
 
-	// The value is saved as a wrapper value, with V being the actual value and T being its type key.
-	value := reflect.ValueOf(source)
-	var t reflect.Type
-	if value.Kind() == reflect.Interface || value.Kind() == reflect.Ptr {
-		t = value.Elem().Type()
-	} else {
-		t = value.Type()
-	}
-
-	wrapper := wrapper{
-		Id: bson.NewObjectId(),
-		T:  typeregistry.GetKey(t),
-		V:  source,
-	}
-
+	wrapper := wrap(item, bson.ObjectId(bson.NewObjectId()))
 	err := coll.Insert(wrapper)
+
 	return wrapper.Id, err
 }
 
-func (r *Repo) GetById(id interface{}) (interface{}, error) {
+func (r *Repo) Update(id bson.ObjectId, item interface{}) error {
+	session := r.session.Copy()
+	defer session.Close()
+
+	coll := session.DB("").C(r.coll)
+
+	wrapper := wrap(item, id)
+	err := coll.UpdateId(id, wrapper)
+
+	return err
+}
+
+func (r *Repo) GetById(id bson.ObjectId) (interface{}, error) {
 	session := r.session.Copy()
 	defer session.Close()
 
@@ -67,8 +66,6 @@ func (r *Repo) GetById(id interface{}) (interface{}, error) {
 	if err != nil {
 		return nil, err
 	}
-	//tv := reflect.TypeOf(wrapper.V)
-	//fmt.Println(tv)
 
 	i, err := unwrap(wrapper)
 	if err != nil {
@@ -78,37 +75,82 @@ func (r *Repo) GetById(id interface{}) (interface{}, error) {
 	return i, nil
 }
 
-func (r *Repo) GetAll() ([]interface{}, error) {
+func (r *Repo) GetAll(result interface{}) error {
+
+	resultv := reflect.ValueOf(result)
+	if resultv.Kind() != reflect.Ptr {
+		panic("result argument must be a slice address")
+	}
+
+	slicev := resultv.Elem()
+
+	if slicev.Kind() == reflect.Interface {
+		slicev = slicev.Elem()
+	}
+	if slicev.Kind() != reflect.Slice {
+		panic("result argument must be a slice address")
+	}
+
 	session := r.session.Copy()
 	defer session.Close()
 
 	coll := session.DB("").C(r.coll)
 
-	// read wrapper
-	var wrappers []wrapper
-	err := coll.Find(bson.M{}).All(&wrappers)
-	if err != nil {
-		return nil, err
-	}
+	iter := coll.Find(bson.M{}).Iter()
 
-	var result = make([]interface{}, 0)
 	var errs = make([]string, 0)
-	for _, w := range wrappers {
-		v, err := unwrap(w)
+	var w wrapper
+	for iter.Next(&w) {
+		item, err := unwrap(w)
 		if err != nil {
 			errs = append(errs, err.Error())
 		} else {
-			result = append(result, v)
+			slicev = reflect.Append(slicev, reflect.ValueOf(item))
 		}
 	}
-	if len(errs) > 0 {
-		return nil, errors.New("Unwrapping generated errors: " + strings.Join(errs, " "))
+	err := iter.Close()
+	if err != nil {
+		return err
 	}
 
-	return result, nil
+	if len(errs) > 0 {
+		return errors.New("Unwrapping generated errors: " + strings.Join(errs, ", "))
+	}
+
+	resultv.Elem().Set(slicev)
+	return nil
+}
+
+func (r *Repo) Delete(id bson.ObjectId) error {
+	session := r.session.Copy()
+	defer session.Close()
+
+	coll := session.DB("").C(r.coll)
+
+	return coll.RemoveId(id)
+}
+
+func wrap(item interface{}, id bson.ObjectId) wrapper {
+	// The value is saved as a wrapper value, with V being the actual value and T being its type key.
+	value := reflect.ValueOf(item)
+	var t reflect.Type
+	if value.Kind() == reflect.Interface || value.Kind() == reflect.Ptr {
+		t = value.Elem().Type()
+	} else {
+		t = value.Type()
+	}
+	wrapper := wrapper{
+		Id: id,
+		T:  typeregistry.GetKey(t),
+		V:  item,
+	}
+	return wrapper
 }
 
 func unwrap(w wrapper) (interface{}, error) {
+	//tv := reflect.TypeOf(w.V)
+	//fmt.Println(tv)
+
 	// Obtain Type from from its key from the type registry
 	// The type must have been previously registered with typeregistry.Register
 	t := typeregistry.GetType(w.T)

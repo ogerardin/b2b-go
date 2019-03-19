@@ -1,10 +1,10 @@
 package repo
 
 import (
-	"b2b-go/lib/domain"
-	"b2b-go/lib/runtime"
+	"b2b-go/app"
 	"fmt"
 	"github.com/globalsign/mgo"
+	"github.com/globalsign/mgo/bson"
 	"go.uber.org/fx"
 	"go.uber.org/fx/fxtest"
 	"testing"
@@ -13,8 +13,8 @@ import (
 func TestTargetRepo(t *testing.T) {
 	testApp := fxtest.New(t,
 		fx.Provide(func() *testing.T { return t }),
-		fx.Provide(runtime.TestDBServerProvider),
-		fx.Provide(runtime.SessionProvider),
+		fx.Provide(app.TestDBServerProvider),
+		fx.Provide(app.SessionProvider),
 
 		fx.Invoke(testTargetRepoWithSession),
 	)
@@ -23,14 +23,14 @@ func TestTargetRepo(t *testing.T) {
 }
 
 func testTargetRepoWithSession(t *testing.T, session *mgo.Session) {
-	repo := NewTargetRepo(session)
-	target := domain.LocalTarget{
-		BackupTargetBase: domain.BackupTargetBase{
+	repo := app.NewTargetRepo(session)
+	target := app.LocalTarget{
+		BackupTargetBase: app.BackupTargetBase{
 			Name: "target 1",
 		},
 	}
-	target2 := domain.PeerTarget{
-		BackupTargetBase: domain.BackupTargetBase{
+	target2 := app.PeerTarget{
+		BackupTargetBase: app.BackupTargetBase{
 			Name: "target 2",
 		},
 		Hostname: "peerhost",
@@ -43,7 +43,7 @@ func testTargetRepoWithSession(t *testing.T, session *mgo.Session) {
 	//time.Sleep(time.Hour)
 }
 
-func saveTarget(t *testing.T, repo TargetRepo, target domain.BackupTarget) interface{} {
+func saveTarget(t *testing.T, repo app.TargetRepo, target app.BackupTarget) bson.ObjectId {
 	id, err := repo.SaveNew(target)
 	if err != nil {
 		t.Fatal(err)
@@ -52,7 +52,7 @@ func saveTarget(t *testing.T, repo TargetRepo, target domain.BackupTarget) inter
 	return id
 }
 
-func loadTarget(t *testing.T, repo TargetRepo, id interface{}) {
+func loadTarget(t *testing.T, repo app.TargetRepo, id bson.ObjectId) {
 	loaded, err := repo.GetById(id)
 	if err != nil {
 		t.Fatal(err)

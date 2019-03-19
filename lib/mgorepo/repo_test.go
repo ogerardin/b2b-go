@@ -1,12 +1,14 @@
 package mgorepo
 
 import (
-	"b2b-go/lib/runtime"
+	"b2b-go/app"
 	"b2b-go/lib/typeregistry"
 	"github.com/globalsign/mgo"
+	"github.com/globalsign/mgo/bson"
 	"go.uber.org/fx"
 	"go.uber.org/fx/fxtest"
 	"reflect"
+	"strconv"
 	"testing"
 )
 
@@ -18,8 +20,8 @@ type A struct {
 	Field1 int
 }
 
-func (A) String() string {
-	return "i'm an A!"
+func (a A) String() string {
+	return "i'm an A! " + strconv.Itoa(a.Field1)
 }
 
 type B struct {
@@ -27,8 +29,8 @@ type B struct {
 	Field2 int
 }
 
-func (B) String() string {
-	return "i'm a B!"
+func (b B) String() string {
+	return "i'm a B! " + strconv.Itoa(b.Field1)
 }
 
 type C struct {
@@ -36,8 +38,8 @@ type C struct {
 	Field3 int
 }
 
-func (C) String() string {
-	return "i'm a C!"
+func (c C) String() string {
+	return "i'm a C! " + strconv.Itoa(c.Field1)
 }
 
 func init() {
@@ -56,12 +58,12 @@ func NewTestRepo(s *mgo.Session) *TestRepo {
 	}
 }
 
-func (r *TestRepo) SaveNew(item I) (interface{}, error) {
+func (r *TestRepo) SaveNew(item I) (bson.ObjectId, error) {
 	saved, err := r.Repo.SaveNew(item)
 	return saved, err
 }
 
-func (r *TestRepo) GetById(id interface{}) (I, error) {
+func (r *TestRepo) GetById(id bson.ObjectId) (I, error) {
 	retrieved, err := r.Repo.GetById(id)
 	return retrieved.(I), err
 }
@@ -69,8 +71,8 @@ func (r *TestRepo) GetById(id interface{}) (I, error) {
 func TestGenericRepo(t *testing.T) {
 	testApp := fxtest.New(t,
 		fx.Provide(func() *testing.T { return t }),
-		fx.Provide(runtime.TestDBServerProvider),
-		fx.Provide(runtime.SessionProvider),
+		fx.Provide(app.TestDBServerProvider),
+		fx.Provide(app.SessionProvider),
 
 		fx.Invoke(testWithSession),
 	)
@@ -97,18 +99,19 @@ func testWithSession(t *testing.T, session *mgo.Session) {
 			Field1: 2,
 		},
 	}
+
 	id2, err := repo.SaveNew(&instanceC)
 	if err != nil {
 		t.Fatal(err)
 	}
 	t.Log(id2)
 
-	all, err := repo.GetAll()
-	t.Logf("Found %d items: %v", len(all), all)
-
-	for _, v := range all {
-		var _ = v.(I)
+	all := make([]I, 0)
+	err = repo.GetAll(&all)
+	if err != nil {
+		t.Fatal(err)
 	}
+	t.Logf("Found %d items: %v", len(all), all)
 
 	loaded1, err := repo.GetById(id1)
 	if err != nil {
@@ -121,5 +124,21 @@ func testWithSession(t *testing.T, session *mgo.Session) {
 		t.Fatal(err)
 	}
 	t.Log(loaded2.String())
-	//time.Sleep(time.Hour)
+
+	instanceC2 := C{
+		A: A{
+			Field1: 333,
+		},
+	}
+	err = repo.Update(id2, instanceC2)
+	if err != nil {
+		t.Fatal(err)
+	}
+
+	loaded22, err := repo.GetById(id2)
+	if err != nil {
+		t.Fatal(err)
+	}
+	t.Log(loaded22.String())
+
 }
