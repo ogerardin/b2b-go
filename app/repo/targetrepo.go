@@ -1,15 +1,15 @@
 package repo
 
 import (
-	"b2b-go/app"
+	"b2b-go/app/domain"
 	"b2b-go/lib/mgorepo"
 	"github.com/globalsign/mgo"
 	"github.com/globalsign/mgo/bson"
 )
 
 type TargetRepo interface {
-	SaveNew(source app.BackupTarget) (bson.ObjectId, error)
-	GetById(id bson.ObjectId) (app.BackupTarget, error)
+	SaveNew(source domain.BackupTarget) (bson.ObjectId, error)
+	GetById(id bson.ObjectId) (domain.BackupTarget, error)
 }
 
 type targetRepoImpl struct {
@@ -22,12 +22,12 @@ func NewTargetRepo(s *mgo.Session) TargetRepo {
 	}
 }
 
-func (r *targetRepoImpl) SaveNew(target app.BackupTarget) (bson.ObjectId, error) {
+func (r *targetRepoImpl) SaveNew(target domain.BackupTarget) (bson.ObjectId, error) {
 	saved, err := r.Repo.SaveNew(target)
 	return saved, err
 }
 
-func (r *targetRepoImpl) GetById(id bson.ObjectId) (app.BackupTarget, error) {
+func (r *targetRepoImpl) GetById(id bson.ObjectId) (domain.BackupTarget, error) {
 	retrieved, err := r.Repo.GetById(id)
-	return retrieved.(app.BackupTarget), err
+	return retrieved.(domain.BackupTarget), err
 }

@@ -30,13 +30,11 @@ func DBServerProvider(lc fx.Lifecycle) *slavemongo.DBServer {
 }
 
 func dbServer(lc fx.Lifecycle, test bool) *slavemongo.DBServer {
-	var mgoPath = "mongo-data"
-	if test {
-		mgoPath, _ = ioutil.TempDir(os.TempDir(), "mongo-test")
-	}
 	server := slavemongo.DBServer{}
-	server.SetPath(mgoPath)
+
 	if test {
+		mgoPath, _ := ioutil.TempDir(os.TempDir(), "mongo-test")
+		server.SetPath(mgoPath)
 		server.SetPort(27017)
 	}
 

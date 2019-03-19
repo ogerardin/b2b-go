@@ -1,7 +1,6 @@
 package domain
 
 import (
-	"b2b-go/app"
 	"b2b-go/lib/typeregistry"
 	"fmt"
 	"reflect"

@@ -52,9 +52,9 @@ func (dbs *DBServer) Start() {
 		//log.Print("DBServer already started")
 		return
 	}
-	if dbs.dbpath == "" {
-		panic("DBServer.SetPath must be called before using the server")
-	}
+	//if dbs.dbpath == "" {
+	//	panic("DBServer.SetPath must be called before using the server")
+	//}
 	mgo.SetStats(true)
 
 	// if SetPort has been called, we'll try to listen on the specified port
@@ -70,7 +70,6 @@ func (dbs *DBServer) Start() {
 	dbs.host = addr.String()
 
 	args := []string{
-		"--dbpath", dbs.dbpath,
 		"--bind_ip", "127.0.0.1",
 		"--port", strconv.Itoa(addr.Port),
 		"--nssize", "1",
@@ -78,6 +77,10 @@ func (dbs *DBServer) Start() {
 		"--smallfiles",
 		"--nojournal",
 	}
+	if dbs.dbpath != "" {
+		args = append(args, "--dbpath", dbs.dbpath)
+	}
+
 	dbs.tomb = tomb.Tomb{}
 	dbs.server = exec.Command("mongod", args...)
 	//dbs.server.Stdout = &dbs.output

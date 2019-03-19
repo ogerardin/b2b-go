@@ -1,7 +1,7 @@
 package runtime
 
 import (
-	"b2b-go/app"
+	"b2b-go/app/usage"
 	"flag"
 	"log"
 	"os"
@@ -52,7 +52,7 @@ func ParseCommandLineOptions() Options {
 		flag.BoolVar(&options.HideConsole, "no-console", false, "Hide console window")
 	}
 
-	flag.Usage = app.UsageFor(flag.CommandLine, "b2b [options]", "")
+	flag.Usage = usage.UsageFor(flag.CommandLine, "b2b [options]", "")
 	flag.Parse()
 
 	if len(flag.Args()) > 0 {

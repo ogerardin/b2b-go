@@ -1,8 +1,8 @@
 package mgorepo
 
 import (
-	"b2b-go/app"
 	"b2b-go/lib/typeregistry"
+	"fmt"
 	"github.com/globalsign/mgo"
 	"github.com/globalsign/mgo/bson"
 	"go.uber.org/fx"
@@ -40,6 +40,15 @@ type C struct {
 
 func (c C) String() string {
 	return "i'm a C! " + strconv.Itoa(c.Field1)
+}
+
+func TestMain(m *testing.M) {
+
+	fmt.Println("before tests")
+	exitCode := m.Run()
+	fmt.Println("after tests")
+
+	os.Exit(exitCode)
 }
 
 func init() {
