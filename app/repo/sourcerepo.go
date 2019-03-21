@@ -26,10 +26,11 @@ func NewSourceRepo(s *mgo.Session) SourceRepo {
 		*mgorepo.New(s, "sources"),
 	}
 
+	//FIXME for testing, remove
 	repo.SaveNew(domain.FilesystemSource{
 		BackupSourceBase: domain.BackupSourceBase{
 			Enabled: true,
-			Name:    "dummy",
+			Name:    "my source",
 		},
 		Paths: []string{"/tmp"},
 	})
