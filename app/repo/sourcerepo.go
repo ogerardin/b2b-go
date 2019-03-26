@@ -29,7 +29,7 @@ func NewSourceRepo(s *mgo.Session) SourceRepo {
 	repo.SaveNew(domain.FilesystemSource{
 		BackupSourceBase: domain.BackupSourceBase{
 			Enabled: true,
-			Name:    "dummy",
+			Name:    "my source",
 		},
 		Paths: []string{"/tmp"},
 	})
@@ -38,7 +38,7 @@ func NewSourceRepo(s *mgo.Session) SourceRepo {
 }
 
 func (r *sourceRepoImpl) SaveNew(source domain.BackupSource) (bson.ObjectId, error) {
-	saved, err := r.Repo.SaveNew(source)
+	saved, err := r.Repo.SaveNew(&source)
 	return saved, err
 }
 

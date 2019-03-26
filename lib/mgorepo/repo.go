@@ -2,6 +2,7 @@ package mgorepo
 
 import (
 	"b2b-go/lib/typeregistry"
+	"b2b-go/lib/util"
 	"github.com/globalsign/mgo"
 	"github.com/globalsign/mgo/bson"
 	"github.com/mitchellh/mapstructure"
@@ -14,6 +15,11 @@ import (
 type Repo struct {
 	session *mgo.Session
 	coll    string
+}
+
+type HasId interface {
+	GetId() string
+	SetId(id string)
 }
 
 type wrapper struct {
@@ -36,7 +42,7 @@ func (r *Repo) SaveNew(item interface{}) (bson.ObjectId, error) {
 
 	coll := session.DB("").C(r.coll)
 
-	wrapper := wrap(item, bson.ObjectId(bson.NewObjectId()))
+	wrapper := wrap(item, bson.NewObjectId())
 	err := coll.Insert(wrapper)
 
 	return wrapper.Id, err
@@ -131,14 +137,12 @@ func (r *Repo) Delete(id bson.ObjectId) error {
 }
 
 func wrap(item interface{}, id bson.ObjectId) wrapper {
+
+	//util.Introspect(item)
+
 	// The value is saved as a wrapper value, with V being the actual value and T being its type key.
-	value := reflect.ValueOf(item)
-	var t reflect.Type
-	if value.Kind() == reflect.Interface || value.Kind() == reflect.Ptr {
-		t = value.Elem().Type()
-	} else {
-		t = value.Type()
-	}
+	t := util.ConcreteType(item)
+
 	wrapper := wrapper{
 		Id: id,
 		T:  typeregistry.GetKey(t),

@@ -1,12 +1,14 @@
 package mgorepo
 
 import (
+	"b2b-go/app/runtime"
 	"b2b-go/lib/typeregistry"
 	"fmt"
 	"github.com/globalsign/mgo"
 	"github.com/globalsign/mgo/bson"
 	"go.uber.org/fx"
 	"go.uber.org/fx/fxtest"
+	"os"
 	"reflect"
 	"strconv"
 	"testing"
@@ -80,8 +82,8 @@ func (r *TestRepo) GetById(id bson.ObjectId) (I, error) {
 func TestGenericRepo(t *testing.T) {
 	testApp := fxtest.New(t,
 		fx.Provide(func() *testing.T { return t }),
-		fx.Provide(app.TestDBServerProvider),
-		fx.Provide(app.SessionProvider),
+		fx.Provide(runtime.TestDBServerProvider),
+		fx.Provide(runtime.SessionProvider),
 
 		fx.Invoke(testWithSession),
 	)
