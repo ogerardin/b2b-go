@@ -5,15 +5,11 @@ import (
 	"context"
 	"flag"
 	"github.com/globalsign/mgo"
-	"go.uber.org/dig"
 	"go.uber.org/fx"
 	"io/ioutil"
 	"log"
 	"os"
 )
-
-// application-wide context
-var Container *dig.Container
 
 func init() {
 	if flag.Lookup("test.v") != nil {
@@ -46,7 +42,9 @@ func dbServer(lc fx.Lifecycle, test bool) *slavemongo.DBServer {
 		},
 		OnStop: func(c context.Context) error {
 			log.Print("Stopping slave Mongo server")
-			server.Wipe()
+			if test {
+				server.Wipe()
+			}
 			server.Stop()
 			return nil
 		},
