@@ -5,8 +5,8 @@ import (
 )
 
 type BackupSource interface {
-	backupSource()
 	Desc() string
+	//SetId(id string)
 }
 
 type BackupSourceBase struct {
@@ -14,6 +14,8 @@ type BackupSourceBase struct {
 	Enabled bool
 	Name    string
 }
+
+var _ BackupSource = &BackupSourceBase{}
 
 func (bsb *BackupSourceBase) GetId() string {
 	return bsb.Id
@@ -26,5 +28,3 @@ func (bsb *BackupSourceBase) SetId(id string) {
 func (bsb BackupSourceBase) Desc() string {
 	return fmt.Sprintf("BackupSourceBase (%+v)", bsb)
 }
-
-func (BackupSourceBase) backupSource() {}

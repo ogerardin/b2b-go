@@ -17,8 +17,11 @@ type Repo struct {
 	coll    string
 }
 
-type HasId interface {
+type HasGetId interface {
 	GetId() string
+}
+
+type HasSetId interface {
 	SetId(id string)
 }
 
@@ -26,7 +29,7 @@ type HasId interface {
 var hasIdInterfaceType reflect.Type
 
 func init() {
-	hasIdInterfaceType = reflect.TypeOf((*HasId)(nil)).Elem()
+	hasIdInterfaceType = reflect.TypeOf((*HasSetId)(nil)).Elem()
 
 }
 
@@ -145,16 +148,9 @@ func (r *Repo) Delete(id bson.ObjectId) error {
 }
 
 func wrap(item interface{}, id bson.ObjectId) wrapper {
+	t := util.ConcreteValue(item).Type()
 
-	//util.Introspect(item)
-
-	t, v := util.ConcreteType(item)
-
-	log.Println()
-	log.Println(">>>", t, v)
-	log.Println()
-
-	//setId(item, id)
+	setId(item, id)
 
 	// The value is saved as a wrapper value, with V being the actual value and T being its type key.
 	wrapper := wrapper{
@@ -167,21 +163,29 @@ func wrap(item interface{}, id bson.ObjectId) wrapper {
 
 func setId(item interface{}, id bson.ObjectId) {
 
-	v := util.ConcreteValue(item)
-	log.Print(v)
+	v := reflect.ValueOf(item)
 
-	util.Introspect(v)
+	// if we don't have a pointer, we won't be able to call SetId
+	if !(v.Type().Kind() == reflect.Ptr) {
+		return
+	}
 
+	// get concrete structure
+	for v.Kind() != reflect.Struct {
+		v = v.Elem()
+	}
+
+	// obtain pointer to this structure
 	pv := v.Addr()
 
-	if pv.Type().Implements(hasIdInterfaceType) {
-
-		hasId := pv.Interface().(HasId)
-		hasId.SetId(id.Hex())
-		log.Println()
-		log.Println(">>>>>>", hasId)
-		log.Println()
+	// if it does not implement HasSetId, nothing to do
+	if !pv.Type().Implements(hasIdInterfaceType) {
+		return
 	}
+
+	// convert to HasSetId type and call SetId
+	itemWithId := pv.Interface().(HasSetId)
+	itemWithId.SetId(id.Hex())
 
 }
 

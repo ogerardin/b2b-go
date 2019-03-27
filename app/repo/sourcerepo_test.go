@@ -25,6 +25,7 @@ func TestSourceRepo(t *testing.T) {
 
 func testSourceRepoWithSession(t *testing.T, session *mgo.Session) {
 	repo := NewSourceRepo(session)
+
 	source := domain.FilesystemSource{
 		BackupSourceBase: domain.BackupSourceBase{
 			Name: "source 1",
@@ -45,9 +46,9 @@ func testSourceRepoWithSession(t *testing.T, session *mgo.Session) {
 		},
 	}
 
-	id1 := saveSource(t, repo, source)
-	id2 := saveSource(t, repo, source2)
-	id3 := saveSource(t, repo, source3)
+	id1 := saveSource(t, repo, &source)
+	id2 := saveSource(t, repo, &source2)
+	id3 := saveSource(t, repo, &source3)
 
 	sources, err := repo.GetAll()
 	if err != nil {

@@ -11,6 +11,8 @@ type FilesystemSource struct {
 	Paths []string
 }
 
+var _ BackupSource = &FilesystemSource{}
+
 func (fss FilesystemSource) Desc() string {
 	return fmt.Sprintf("File system source (%+v)", fss)
 }

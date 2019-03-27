@@ -27,7 +27,7 @@ func NewSourceRepo(s *mgo.Session) SourceRepo {
 	}
 
 	//FIXME for testing, remove
-	repo.SaveNew(domain.FilesystemSource{
+	repo.SaveNew(&domain.FilesystemSource{
 		BackupSourceBase: domain.BackupSourceBase{
 			Enabled: true,
 			Name:    "my source",
