@@ -16,12 +16,20 @@ func Introspect(v interface{}) {
 	print(context, rv)
 }
 
-func ConcreteType(v interface{}) reflect.Type {
+func ConcreteType(v interface{}) (reflect.Type, reflect.Value) {
 	rv := reflect.ValueOf(v)
 	for rv.Kind() == reflect.Ptr || rv.Kind() == reflect.Interface {
 		rv = rv.Elem()
 	}
-	return rv.Type()
+	return rv.Type(), rv
+}
+
+func ConcreteValue(v interface{}) reflect.Value {
+	rv := reflect.ValueOf(v)
+	for rv.Kind() == reflect.Ptr || rv.Kind() == reflect.Interface {
+		rv = rv.Elem()
+	}
+	return rv
 }
 
 func print(context string, rv reflect.Value) {

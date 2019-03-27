@@ -22,6 +22,14 @@ type HasId interface {
 	SetId(id string)
 }
 
+// this should be a const but compiler complains "const initializer is not a constant"
+var hasIdInterfaceType reflect.Type
+
+func init() {
+	hasIdInterfaceType = reflect.TypeOf((*HasId)(nil)).Elem()
+
+}
+
 type wrapper struct {
 	Id bson.ObjectId `bson:"_id"`
 	T  string        `bson:"_t"`
@@ -140,15 +148,41 @@ func wrap(item interface{}, id bson.ObjectId) wrapper {
 
 	//util.Introspect(item)
 
-	// The value is saved as a wrapper value, with V being the actual value and T being its type key.
-	t := util.ConcreteType(item)
+	t, v := util.ConcreteType(item)
 
+	log.Println()
+	log.Println(">>>", t, v)
+	log.Println()
+
+	//setId(item, id)
+
+	// The value is saved as a wrapper value, with V being the actual value and T being its type key.
 	wrapper := wrapper{
 		Id: id,
 		T:  typeregistry.GetKey(t),
 		V:  item,
 	}
 	return wrapper
+}
+
+func setId(item interface{}, id bson.ObjectId) {
+
+	v := util.ConcreteValue(item)
+	log.Print(v)
+
+	util.Introspect(v)
+
+	pv := v.Addr()
+
+	if pv.Type().Implements(hasIdInterfaceType) {
+
+		hasId := pv.Interface().(HasId)
+		hasId.SetId(id.Hex())
+		log.Println()
+		log.Println(">>>>>>", hasId)
+		log.Println()
+	}
+
 }
 
 func unwrap(w wrapper) (interface{}, error) {
