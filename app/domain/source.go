@@ -5,8 +5,8 @@ import (
 )
 
 type BackupSource interface {
+	backupSource()
 	Desc() string
-	//SetId(id string)
 }
 
 type BackupSourceBase struct {
@@ -15,7 +15,7 @@ type BackupSourceBase struct {
 	Name    string
 }
 
-var _ BackupSource = &BackupSourceBase{}
+func (bsb BackupSourceBase) backupSource() {}
 
 func (bsb *BackupSourceBase) GetId() string {
 	return bsb.Id

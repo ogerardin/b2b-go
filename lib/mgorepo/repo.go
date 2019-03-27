@@ -30,7 +30,6 @@ var hasIdInterfaceType reflect.Type
 
 func init() {
 	hasIdInterfaceType = reflect.TypeOf((*HasSetId)(nil)).Elem()
-
 }
 
 type wrapper struct {

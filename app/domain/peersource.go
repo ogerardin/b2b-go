@@ -12,6 +12,8 @@ type PeerSource struct {
 	remoteComputerId uuid.UUID
 }
 
+var _ BackupSource = &PeerSource{}
+
 func (ps PeerSource) Desc() string {
 	return fmt.Sprintf("Peer source (%+v)", ps)
 }

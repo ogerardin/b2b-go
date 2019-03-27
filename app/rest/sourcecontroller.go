@@ -42,7 +42,8 @@ func RegisterSourceRoutes(r repo.SourceRepo, g *gin.Engine) {
 	})
 
 	g.POST("/api/sources", func(c *gin.Context) {
-		var source domain.BackupSource
+		//var source domain.BackupSource
+		var source domain.FilesystemSource
 		err := c.Bind(&source)
 		if err != nil {
 			c.AbortWithError(http.StatusInternalServerError, err)

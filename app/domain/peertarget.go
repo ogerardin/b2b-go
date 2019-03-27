@@ -13,6 +13,8 @@ type PeerTarget struct {
 	Port     int
 }
 
+var _ BackupTarget = &PeerTarget{}
+
 func (t PeerTarget) Desc() string {
 	return fmt.Sprintf("Peer Target (%+v)", t)
 }

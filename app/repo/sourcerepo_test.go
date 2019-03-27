@@ -19,6 +19,7 @@ func TestSourceRepo(t *testing.T) {
 
 		fx.Invoke(testSourceRepoWithSession),
 	)
+
 	testApp.RequireStart()
 	testApp.RequireStop()
 }

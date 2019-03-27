@@ -12,6 +12,8 @@ type FilesystemTarget struct {
 	Path string
 }
 
+var _ BackupTarget = &FilesystemTarget{}
+
 func (t FilesystemTarget) Desc() string {
 	return fmt.Sprintf("Filesystem Target (%+v)", t)
 }

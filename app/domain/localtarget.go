@@ -11,6 +11,8 @@ type LocalTarget struct {
 	BackupTargetBase
 }
 
+var _ BackupTarget = &LocalTarget{}
+
 func (t LocalTarget) Desc() string {
 	return fmt.Sprintf("Local Target (%+v)", t)
 }

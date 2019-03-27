@@ -14,6 +14,10 @@ type BackupTargetBase struct {
 
 func (BackupTargetBase) backupTarget() {}
 
+func (btb *BackupTargetBase) SetId(id string) {
+	btb.SetId(id)
+}
+
 func (btb BackupTargetBase) Desc() string {
 	return fmt.Sprintf("BackupTargetBase (%+v)", btb)
 }
