@@ -189,8 +189,6 @@ func setId(item interface{}, id bson.ObjectId) {
 }
 
 func unwrap(w wrapper) (interface{}, error) {
-	//tv := reflect.TypeOf(w.V)
-	//fmt.Println(tv)
 
 	// Obtain Type from from its key from the type registry
 	// The type must have been previously registered with typeregistry.Register
@@ -210,6 +208,6 @@ func unwrap(w wrapper) (interface{}, error) {
 
 	// return the value as interface{}
 	i := pt.Elem().Interface()
-	return i, err
+	return i, nil
 
 }

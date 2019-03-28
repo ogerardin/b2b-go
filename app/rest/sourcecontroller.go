@@ -43,8 +43,10 @@ func RegisterSourceRoutes(r repo.SourceRepo, g *gin.Engine) {
 
 	g.POST("/api/sources", func(c *gin.Context) {
 		//var source domain.BackupSource
+		//FIXME we should be able to bind with any struct that implements BackupSource
+		// We could use a "_t" field that holds the concrete type and do something similar to mgorepo.unwrap()
 		var source domain.FilesystemSource
-		err := c.Bind(&source)
+		err := c.BindJSON(&source)
 		if err != nil {
 			c.AbortWithError(http.StatusInternalServerError, err)
 			return
@@ -62,7 +64,7 @@ func RegisterSourceRoutes(r repo.SourceRepo, g *gin.Engine) {
 		objectId := bson.ObjectIdHex(id)
 
 		var source domain.BackupSource
-		err := c.Bind(&source)
+		err := c.BindJSON(&source)
 		if err != nil {
 			c.AbortWithError(http.StatusInternalServerError, err)
 			return

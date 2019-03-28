@@ -10,9 +10,9 @@ type BackupSource interface {
 }
 
 type BackupSourceBase struct {
-	Id      string
-	Enabled bool
-	Name    string
+	Id      string `json:"id"`
+	Enabled bool   `json:"enabled"`
+	Name    string `json:"name"`
 }
 
 func (bsb BackupSourceBase) backupSource() {}
