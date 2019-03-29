@@ -8,7 +8,7 @@ import (
 )
 
 type PeerSource struct {
-	BackupSourceBase
+	BackupSourceBase `mapstructure:",squash"`
 	remoteComputerId uuid.UUID
 }
 

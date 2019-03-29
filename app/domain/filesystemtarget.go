@@ -8,8 +8,8 @@ import (
 
 //Represents a local filesystem backup destination
 type FilesystemTarget struct {
-	BackupTargetBase
-	Path string
+	BackupTargetBase `mapstructure:",squash"`
+	Path             string
 }
 
 var _ BackupTarget = &FilesystemTarget{}

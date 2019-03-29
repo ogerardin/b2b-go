@@ -8,9 +8,9 @@ import (
 
 //Represents a remote peer backup destination.
 type PeerTarget struct {
-	BackupTargetBase
-	Hostname string
-	Port     int
+	BackupTargetBase `mapstructure:",squash"`
+	Hostname         string
+	Port             int
 }
 
 var _ BackupTarget = &PeerTarget{}

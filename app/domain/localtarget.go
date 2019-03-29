@@ -8,7 +8,7 @@ import (
 
 //Represents the local (internal) backup destination.
 type LocalTarget struct {
-	BackupTargetBase
+	BackupTargetBase `mapstructure:",squash"`
 }
 
 var _ BackupTarget = &LocalTarget{}
