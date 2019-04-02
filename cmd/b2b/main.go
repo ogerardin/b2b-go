@@ -4,24 +4,59 @@ import (
 	"b2b-go/app/repo"
 	"b2b-go/app/rest"
 	"b2b-go/app/runtime"
+	"b2b-go/lib/util"
 	"b2b-go/meta"
 	"context"
-	"flag"
 	"fmt"
+	"github.com/containous/flaeg"
 	"github.com/gin-gonic/gin"
 	"go.uber.org/fx"
-	"log"
 	"os"
 	"runtime/pprof"
 )
 
-func main() {
+var (
+	runCommand = &flaeg.Command{
+		Name:                  "run",
+		Config:                &runtime.CurrentConfig,
+		DefaultPointersConfig: &runtime.DefaultPointersConfig,
+		Run: func() error {
+			startDaemon()
+			return nil
+		},
+	}
 
-	options := runtime.ParseCommandLineOptions()
-	handleUsage(options)
+	versionCommand = &flaeg.Command{
+		Name:                  "version",
+		Config:                &runtime.CurrentConfig,
+		DefaultPointersConfig: &runtime.DefaultPointersConfig,
+		Run: func() error {
+			printVersion()
+			return nil
+		},
+	}
+)
+
+func main() {
+	f := flaeg.New(runCommand, os.Args[1:])
+	f.AddCommand(versionCommand)
+
+	err := f.Run()
+
+	if err != nil {
+		os.Stderr.WriteString(err.Error())
+	}
+}
+
+func printVersion() {
+	fmt.Printf("%s %s", meta.Version, meta.GitHash)
+	os.Exit(0)
+}
+
+func startDaemon() {
 
 	app := fx.New(
-		fx.Provide(func() runtime.Options { return options }),
+		fx.Provide(func() runtime.Configuration { return runtime.CurrentConfig }),
 		fx.Provide(runtime.DBServerProvider),
 		fx.Provide(runtime.SessionProvider),
 		fx.Provide(repo.NewSourceRepo),
@@ -37,32 +72,30 @@ func main() {
 	app.Run()
 }
 
-func handleUsage(options runtime.Options) {
-	if options.ShowVersion {
-		fmt.Printf("%s %s", meta.Version, meta.GitHash)
-		os.Exit(0)
-	}
-
-	if options.ShowHelp {
-		flag.Usage()
-		os.Exit(0)
-	}
-
-}
-
-func handleOptions(lc fx.Lifecycle, options runtime.Options) error {
-	if options.HideConsole {
+func handleOptions(lc fx.Lifecycle, conf runtime.Configuration) error {
+	if conf.HideConsole {
 		//osutil.HideConsole()
 	}
 
-	lc.Append(fx.Hook{
-		OnStop: func(c context.Context) error {
-			if options.CpuProfile {
+	if conf.CpuProfile {
+		lc.Append(fx.Hook{
+			OnStart: func(c context.Context) error {
+				file, err := os.OpenFile("pprof", os.O_CREATE|os.O_WRONLY, util.OS_USER_RW|util.OS_GROUP_R|util.OS_OTH_R)
+				if err != nil {
+					panic(err)
+				}
+				err = pprof.StartCPUProfile(file)
+				if err != nil {
+					panic(err)
+				}
+				return nil
+			},
+			OnStop: func(c context.Context) error {
 				pprof.StopCPUProfile()
-			}
-			return nil
-		},
-	})
+				return nil
+			},
+		})
+	}
 
 	return nil
 }
@@ -74,10 +107,10 @@ func startGin(lc fx.Lifecycle, g *gin.Engine) {
 			go g.Run(":8080")
 			return nil
 		},
-		OnStop: func(c context.Context) error {
-			log.Print("Stopping")
-			return nil
-		},
+		//OnStop: func(c context.Context) error {
+		//	log.Print("Stopping")
+		//	return nil
+		//},
 	})
 
 }

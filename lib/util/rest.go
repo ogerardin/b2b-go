@@ -9,14 +9,15 @@ import (
 	"reflect"
 )
 
-// Maps the body of the HTTP request from context c into a new struct whose type is expected to be found
-// in a field named "_t" of the JSON body. If targetType is not nil, it is asserted that the type implements
-// the specified targetType (which is expected to be an interface type).
+// Maps the body of the HTTP request from context c (expected to be JSON) into a new struct whose type is expected
+// to be found in a field named "_t" of the JSON object. If targetType is not nil, it is asserted that the type implements
+// the specified targetType, which is expected to be an interface type.
 // The type specified in field "_t" must have been registered using typeregistry.Register.
-// In case of success, returns a pointer to the populated struct as an interface{}, and true.
-// In case of error, calls c.AbortWithError, and returns nil and false
 //
-// To obtain the Type of an instance you could do something like:
+// In case of success, returns a pointer to the populated struct as an interface{}, and true.
+// In case of error, calls c.AbortWithError, and returns nil and false.
+//
+// To obtain the Type value for a given interface you could do something like:
 //		targetType := reflect.TypeOf((*MyInterface)(nil)).Elem()
 //
 func MapBody(c *gin.Context, targetType reflect.Type) (interface{}, bool) {

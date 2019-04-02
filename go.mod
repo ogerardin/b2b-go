@@ -1,6 +1,10 @@
 module b2b-go
 
 require (
+	github.com/BurntSushi/toml v0.3.1 // indirect
+	github.com/abronan/valkeyrie v0.0.0-20190313085051-8fd1c7cad28d // indirect
+	github.com/containous/flaeg v1.4.1
+	github.com/containous/staert v3.1.2+incompatible // indirect
 	github.com/gin-contrib/sse v0.0.0-20190301062529-5545eab6dad3 // indirect
 	github.com/gin-gonic/gin v1.3.0
 	github.com/globalsign/mgo v0.0.0-20181015135952-eeefdecb41b8
@@ -16,6 +20,7 @@ require (
 	github.com/mitchellh/mapstructure v1.1.2
 	github.com/modern-go/concurrent v0.0.0-20180306012644-bacd9c7ef1dd // indirect
 	github.com/modern-go/reflect2 v1.0.1 // indirect
+	github.com/ogier/pflag v0.0.1 // indirect
 	github.com/pkg/errors v0.8.1
 	github.com/sirupsen/logrus v1.4.0
 	github.com/stretchr/testify v1.3.0
