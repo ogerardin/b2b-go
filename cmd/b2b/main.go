@@ -16,30 +16,45 @@ import (
 )
 
 var (
+	rootCommand = &flaeg.Command{
+		Name:                  "b2b",
+		Description:           "Peer-to-peer backup",
+		Config:                &runtime.CurrentConfig,
+		DefaultPointersConfig: &runtime.DefaultPointersConfig,
+	}
+
 	runCommand = &flaeg.Command{
 		Name:                  "run",
+		Description:           "Start the daemon and web UI server",
 		Config:                &runtime.CurrentConfig,
 		DefaultPointersConfig: &runtime.DefaultPointersConfig,
 		Run: func() error {
-			startDaemon()
-			return nil
+			return startDaemon(&runtime.CurrentConfig)
 		},
 	}
 
 	versionCommand = &flaeg.Command{
 		Name:                  "version",
+		Description:           "print version information and exits",
 		Config:                &runtime.CurrentConfig,
 		DefaultPointersConfig: &runtime.DefaultPointersConfig,
 		Run: func() error {
-			printVersion()
-			return nil
+			return printVersion()
 		},
 	}
 )
 
 func main() {
-	f := flaeg.New(runCommand, os.Args[1:])
-	f.AddCommand(versionCommand)
+	f := flaegConfig(os.Args[1:])
+
+	rootCommand.Run = func() error {
+		// When no command is specified, the root command is invoked. In this case we want to just print the help
+		// message; unfortunately flaeg has no easy way to do it.
+		// This hack recreates a flaeg config identical to the main one, and simulates a call with "--help"
+		f := flaegConfig([]string{"", "--help"})
+		f.Run()
+		return nil
+	}
 
 	err := f.Run()
 
@@ -48,15 +63,23 @@ func main() {
 	}
 }
 
-func printVersion() {
-	fmt.Printf("%s %s", meta.Version, meta.GitHash)
-	os.Exit(0)
+func flaegConfig(args []string) *flaeg.Flaeg {
+	f := flaeg.New(rootCommand, args)
+	f.AddCommand(runCommand)
+	f.AddCommand(versionCommand)
+	return f
 }
 
-func startDaemon() {
+func printVersion() error {
+	fmt.Printf("%s %s", meta.Version, meta.GitHash)
+	os.Exit(0)
+	return nil
+}
+
+func startDaemon(conf *runtime.Configuration) error {
 
 	app := fx.New(
-		fx.Provide(func() runtime.Configuration { return runtime.CurrentConfig }),
+		fx.Provide(func() *runtime.Configuration { return conf }),
 		fx.Provide(runtime.DBServerProvider),
 		fx.Provide(runtime.SessionProvider),
 		fx.Provide(repo.NewSourceRepo),
@@ -70,6 +93,8 @@ func startDaemon() {
 	)
 
 	app.Run()
+
+	return nil
 }
 
 func handleOptions(lc fx.Lifecycle, conf runtime.Configuration) error {
