@@ -7,27 +7,10 @@ import (
 	"github.com/globalsign/mgo/bson"
 	"github.com/mitchellh/mapstructure"
 	"github.com/pkg/errors"
-	"github.com/sirupsen/logrus"
+	"log"
 	"reflect"
-	"runtime"
 	"strings"
 )
-
-//FIXME loggers should be configured centrally
-var log *logrus.Logger
-
-func init() {
-	log = logrus.New()
-	log.SetReportCaller(true)
-	log.SetFormatter(&logrus.TextFormatter{
-		ForceColors: true,
-		CallerPrettyfier: func(frame *runtime.Frame) (function string, file string) {
-			funcVal := frame.Function
-			return funcVal, ""
-		},
-	})
-	log.SetLevel(logrus.TraceLevel)
-}
 
 type Repo struct {
 	session *mgo.Session
@@ -179,32 +162,32 @@ func wrap(item interface{}, id bson.ObjectId) wrapper {
 
 func setId(item interface{}, id bson.ObjectId) {
 
-	defer util.RecoverPanicAndLog(log, "setId failed")
+	defer util.RecoverPanicAndLog(nil, "setId failed")
 
-	log.Tracef("item = %T %[1]+v", item)
+	log.Printf("item = %T %+[1]v", item)
 
 	v := reflect.ValueOf(item)
-	log.Tracef("value = %v %v %+v", v.Kind(), v.Type(), v)
+	log.Printf("value = %v %v %+v", v.Kind(), v.Type(), v)
 
 	// if we don't have a pointer, we won't be able to call SetId
 	if !(v.Kind() == reflect.Ptr) {
-		log.Debug("not a pointer")
+		log.Print("not a pointer")
 		return
 	}
 
 	// get concrete structure
 	for v.Kind() != reflect.Struct {
 		v = v.Elem()
-		log.Tracef("elem = %v %v %+v", v.Kind(), v.Type(), v)
+		log.Printf("elem = %v %v %+v", v.Kind(), v.Type(), v)
 	}
 
 	// obtain pointer to this structure
 	if !v.CanAddr() {
-		log.Debug("not an addressable value")
+		log.Print("not an addressable value")
 		return
 	}
 	pv := v.Addr()
-	log.Tracef("ptr = %v %v %+v", pv.Kind(), pv.Type(), pv)
+	log.Printf("ptr = %v %v %+v", pv.Kind(), pv.Type(), pv)
 
 	// if it does not implement HasSetId, nothing to do
 	if !pv.Type().Implements(hasIdInterfaceType) {
@@ -213,7 +196,7 @@ func setId(item interface{}, id bson.ObjectId) {
 
 	// convert to HasSetId type and call SetId
 	itemWithId := pv.Interface().(HasSetId)
-	log.Tracef("HasSetId = %T %[1]V", itemWithId)
+	log.Printf("HasSetId = %T %[1]v", itemWithId)
 	itemWithId.SetId(id.Hex())
 
 }

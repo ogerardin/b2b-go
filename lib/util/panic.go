@@ -2,8 +2,12 @@ package util
 
 import "github.com/sirupsen/logrus"
 
-func RecoverPanicAndLog(log *logrus.Logger, msg string) {
+func RecoverPanicAndLog(logger *logrus.Logger, msg string) {
 	if r := recover(); r != nil {
-		log.Debugf(msg+": %s", r)
+		if logger != nil {
+			logrus.Debugf(msg+": %s", r)
+		} else {
+			log.Debugf(msg+": %s", r)
+		}
 	}
 }

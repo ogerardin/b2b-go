@@ -1,29 +1,46 @@
 package runtime
 
+import "github.com/containous/flaeg"
+
 type Configuration struct {
 	LogLevel      string `short:"l" description:"Log level"`
 	Port          int    `short:"p" description:"Port number for web interface"`
 	HideConsole   bool
 	CpuProfile    bool   `description:"Activate CPU profiling"`
 	MongoPort     int    `short:"mp" description:"Port number for mongod (0 = automatic)"`
-	MongoDataPath string `description:"data path for MongoDB (empty = temp path)"`
+	MongoDataPath string `description:"data path for MongoDB (empty = temporary path)"`
 	Profiles      string `description:"Active profiles (comma separated)"`
 	Version       bool   `description:"Print version information and quits"`
+	// used by Staert
+	Flaeg   *flaeg.Flaeg
+	Command *flaeg.Command
 }
 
-var CurrentConfig = defaultConfig()
-
-func defaultConfig() Configuration {
-	return Configuration{
+func DefaultConfig() *Configuration {
+	return &Configuration{
 		LogLevel:      "info",
 		Port:          8080,
 		CpuProfile:    false,
 		HideConsole:   false,
 		MongoPort:     0,
+		MongoDataPath: "",
 		Version:       false,
 		Profiles:      "",
-		MongoDataPath: "",
 	}
 }
 
-var DefaultPointersConfig = Configuration{}
+func TestConfig() *Configuration {
+	return &Configuration{
+		LogLevel:      "debug",
+		Port:          8080,
+		CpuProfile:    true,
+		HideConsole:   false,
+		MongoPort:     27017,
+		MongoDataPath: "",
+		Version:       false,
+	}
+}
+
+func DefaultPointersConfig() *Configuration {
+	return &Configuration{}
+}

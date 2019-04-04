@@ -14,7 +14,8 @@ import (
 func TestSourceRepo(t *testing.T) {
 	testApp := fxtest.New(t,
 		fx.Provide(func() *testing.T { return t }),
-		fx.Provide(runtime.TestDBServerProvider),
+		fx.Provide(runtime.TestConfig),
+		fx.Provide(runtime.DBServerProvider),
 		fx.Provide(runtime.SessionProvider),
 
 		fx.Invoke(testSourceRepoWithSession),

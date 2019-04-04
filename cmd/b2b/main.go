@@ -17,52 +17,73 @@ import (
 	"strings"
 )
 
-var (
-	rootCommand = &flaeg.Command{
-		Name:                  "b2b",
-		Description:           "Peer-to-peer backup",
-		Config:                &runtime.CurrentConfig,
-		DefaultPointersConfig: &runtime.DefaultPointersConfig,
-	}
-)
-
 func main() {
-	f := flaeg.New(rootCommand, os.Args[1:])
 
-	_, err := f.Parse(rootCommand)
+	var conf = runtime.DefaultConfig()
+
+	// parse command line options
+	err := parseCommandLine(conf)
 	if err != nil {
 		os.Stderr.WriteString(err.Error() + "\n")
 		os.Exit(-1)
 	}
 
-	if runtime.CurrentConfig.Version {
+	// if version requested, do it and exit
+	if conf.Version {
 		printVersion()
 		os.Exit(0)
 	}
 
 	// load configuration according to active profiles
-	s := staert.NewStaert(rootCommand)
-
-	profiles := strings.Split(runtime.CurrentConfig.Profiles, ",")
-	profiles = util.Map(profiles, strings.TrimSpace)
-	fmt.Printf("Active profiles: %v\n", profiles)
-
-	s.AddSource(staert.NewTomlSource("b2b", []string{"./conf", "."}))
-	for _, profile := range profiles {
-		s.AddSource(staert.NewTomlSource("b2b-"+profile, []string{"./conf", "."}))
-	}
-	s.AddSource(f)
-
-	_, err = s.LoadConfig()
+	err = loadExternalConfig(conf)
 	if err != nil {
 		os.Stderr.WriteString(err.Error() + "\n")
 		os.Exit(-1)
 	}
 
-	fmt.Printf("%+v\n", runtime.CurrentConfig)
+	fmt.Printf("%+v\n", conf)
 
-	startDaemon(&runtime.CurrentConfig)
+	// start the thing
+	startApp(conf)
 
+}
+
+func loadExternalConfig(conf *runtime.Configuration) error {
+	profiles := strings.Split(conf.Profiles, ",")
+	profiles = util.Map(profiles, strings.TrimSpace)
+	fmt.Printf("Active profiles: %v\n", profiles)
+
+	s := staert.NewStaert(conf.Command)
+	s.AddSource(staert.NewTomlSource("b2b", []string{"./conf", "."}))
+	for _, profile := range profiles {
+		s.AddSource(staert.NewTomlSource("b2b-"+profile, []string{"./conf", "."}))
+	}
+	s.AddSource(conf.Flaeg)
+
+	_, err := s.LoadConfig()
+	return err
+}
+
+func command(conf *runtime.Configuration) *flaeg.Command {
+	command := &flaeg.Command{
+		Name:                  "b2b",
+		Description:           "Peer-to-peer backup",
+		Config:                conf,
+		DefaultPointersConfig: runtime.DefaultPointersConfig(),
+	}
+	return command
+}
+
+func parseCommandLine(conf *runtime.Configuration) error {
+	command := command(conf)
+
+	f := flaeg.New(command, os.Args[1:])
+	cmd, err := f.Parse(command)
+	// store these in the config for later use by Staert
+	conf.Flaeg = f
+	conf.Command = cmd
+
+	return err
 }
 
 func printVersion() error {
@@ -70,17 +91,17 @@ func printVersion() error {
 	return nil
 }
 
-func providers(conf *runtime.Configuration) fx.Option {
-	providers := fx.Options()
+func providers(constructors ...interface{}) fx.Option {
+	options := fx.Options()
 
-	providers = fx.Options(providers,
-		fx.Provide(runtime.DBServerProvider),
-	)
+	for _, provider := range constructors {
+		options = fx.Options(options, fx.Provide(provider))
+	}
 
-	return nil
+	return options
 }
 
-func startDaemon(conf *runtime.Configuration) error {
+func startApp(conf *runtime.Configuration) error {
 
 	app := fx.New(
 		fx.Provide(func() *runtime.Configuration { return conf }),
