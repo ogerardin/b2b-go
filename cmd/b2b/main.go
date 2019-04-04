@@ -9,10 +9,12 @@ import (
 	"context"
 	"fmt"
 	"github.com/containous/flaeg"
+	"github.com/containous/staert"
 	"github.com/gin-gonic/gin"
 	"go.uber.org/fx"
 	"os"
 	"runtime/pprof"
+	"strings"
 )
 
 var (
@@ -22,57 +24,59 @@ var (
 		Config:                &runtime.CurrentConfig,
 		DefaultPointersConfig: &runtime.DefaultPointersConfig,
 	}
-
-	runCommand = &flaeg.Command{
-		Name:                  "run",
-		Description:           "Start the daemon and web UI server",
-		Config:                &runtime.CurrentConfig,
-		DefaultPointersConfig: &runtime.DefaultPointersConfig,
-		Run: func() error {
-			return startDaemon(&runtime.CurrentConfig)
-		},
-	}
-
-	versionCommand = &flaeg.Command{
-		Name:                  "version",
-		Description:           "print version information and exits",
-		Config:                &runtime.CurrentConfig,
-		DefaultPointersConfig: &runtime.DefaultPointersConfig,
-		Run: func() error {
-			return printVersion()
-		},
-	}
 )
 
 func main() {
-	f := flaegConfig(os.Args[1:])
+	f := flaeg.New(rootCommand, os.Args[1:])
 
-	rootCommand.Run = func() error {
-		// When no command is specified, the root command is invoked. In this case we want to just print the help
-		// message; unfortunately flaeg has no easy way to do it.
-		// This hack recreates a flaeg config identical to the main one, and simulates a call with "--help"
-		f := flaegConfig([]string{"", "--help"})
-		f.Run()
-		return nil
-	}
-
-	err := f.Run()
-
+	_, err := f.Parse(rootCommand)
 	if err != nil {
-		os.Stderr.WriteString(err.Error())
+		os.Stderr.WriteString(err.Error() + "\n")
+		os.Exit(-1)
 	}
-}
 
-func flaegConfig(args []string) *flaeg.Flaeg {
-	f := flaeg.New(rootCommand, args)
-	f.AddCommand(runCommand)
-	f.AddCommand(versionCommand)
-	return f
+	if runtime.CurrentConfig.Version {
+		printVersion()
+		os.Exit(0)
+	}
+
+	// load configuration according to active profiles
+	s := staert.NewStaert(rootCommand)
+
+	profiles := strings.Split(runtime.CurrentConfig.Profiles, ",")
+	profiles = util.Map(profiles, strings.TrimSpace)
+	fmt.Printf("Active profiles: %v\n", profiles)
+
+	s.AddSource(staert.NewTomlSource("b2b", []string{"./conf", "."}))
+	for _, profile := range profiles {
+		s.AddSource(staert.NewTomlSource("b2b-"+profile, []string{"./conf", "."}))
+	}
+	s.AddSource(f)
+
+	_, err = s.LoadConfig()
+	if err != nil {
+		os.Stderr.WriteString(err.Error() + "\n")
+		os.Exit(-1)
+	}
+
+	fmt.Printf("%+v\n", runtime.CurrentConfig)
+
+	startDaemon(&runtime.CurrentConfig)
+
 }
 
 func printVersion() error {
-	fmt.Printf("%s %s", meta.Version, meta.GitHash)
-	os.Exit(0)
+	fmt.Printf("%s %s\n", meta.Version, meta.GitHash)
+	return nil
+}
+
+func providers(conf *runtime.Configuration) fx.Option {
+	providers := fx.Options()
+
+	providers = fx.Options(providers,
+		fx.Provide(runtime.DBServerProvider),
+	)
+
 	return nil
 }
 
@@ -97,7 +101,7 @@ func startDaemon(conf *runtime.Configuration) error {
 	return nil
 }
 
-func handleOptions(lc fx.Lifecycle, conf runtime.Configuration) error {
+func handleOptions(lc fx.Lifecycle, conf *runtime.Configuration) error {
 	if conf.HideConsole {
 		//osutil.HideConsole()
 	}

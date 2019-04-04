@@ -1,0 +1,2 @@
+MongoPort=27017
+MongoDataPath="mongo-data"

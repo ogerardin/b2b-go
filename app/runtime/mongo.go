@@ -2,6 +2,7 @@ package runtime
 
 import (
 	slavemongo "b2b-go/lib/slave-mongo"
+	"b2b-go/lib/util"
 	"context"
 	"flag"
 	"github.com/globalsign/mgo"
@@ -17,22 +18,15 @@ func init() {
 	}
 }
 
-func TestDBServerProvider(lc fx.Lifecycle) *slavemongo.DBServer {
-	return dbServer(lc, true)
-}
-
-func DBServerProvider(lc fx.Lifecycle) *slavemongo.DBServer {
-	return dbServer(lc, false)
-}
-
-func dbServer(lc fx.Lifecycle, test bool) *slavemongo.DBServer {
+func DBServerProvider(lc fx.Lifecycle, conf *Configuration) *slavemongo.DBServer {
 	server := slavemongo.DBServer{}
 
-	if test {
-		mgoPath, _ := ioutil.TempDir(os.TempDir(), "mongo-test")
-		server.SetPath(mgoPath)
-		server.SetPort(27017)
+	if conf.MongoDataPath == "" {
+		conf.MongoDataPath, _ = ioutil.TempDir(os.TempDir(), "mongo-test")
 	}
+	os.MkdirAll(conf.MongoDataPath, util.OS_USER_RWX|util.OS_GROUP_RWX|util.OS_OTH_RWX)
+	server.SetPath(conf.MongoDataPath)
+	server.SetPort(conf.MongoPort)
 
 	lc.Append(fx.Hook{
 		OnStart: func(c context.Context) error {
@@ -42,9 +36,9 @@ func dbServer(lc fx.Lifecycle, test bool) *slavemongo.DBServer {
 		},
 		OnStop: func(c context.Context) error {
 			log.Print("Stopping slave Mongo server")
-			if test {
-				server.Wipe()
-			}
+			//if test {
+			//	server.Wipe()
+			//}
 			server.Stop()
 			return nil
 		},

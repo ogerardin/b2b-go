@@ -15,8 +15,6 @@ require (
 	github.com/magefile/mage v1.8.0
 	github.com/mattn/go-isatty v0.0.6 // indirect
 	github.com/mattn/psutil v0.0.0-20170126005127-e6c88f1e9be6
-	github.com/mitchellh/gox v0.4.0 // indirect
-	github.com/mitchellh/iochan v1.0.0 // indirect
 	github.com/mitchellh/mapstructure v1.1.2
 	github.com/modern-go/concurrent v0.0.0-20180306012644-bacd9c7ef1dd // indirect
 	github.com/modern-go/reflect2 v1.0.1 // indirect
@@ -26,7 +24,7 @@ require (
 	github.com/stretchr/testify v1.3.0
 	github.com/ugorji/go/codec v0.0.0-20190204201341-e444a5086c43 // indirect
 	go.uber.org/atomic v1.3.2 // indirect
-	go.uber.org/dig v1.7.0
+	go.uber.org/dig v1.7.0 // indirect
 	go.uber.org/fx v1.9.0
 	go.uber.org/goleak v0.10.0 // indirect
 	go.uber.org/multierr v1.1.0 // indirect
