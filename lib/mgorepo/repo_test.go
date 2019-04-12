@@ -91,6 +91,8 @@ func TestGenericRepo(t *testing.T) {
 	defer session.Close()
 
 	testWithSession(t, session)
+
+	//time.Sleep(10 * time.Minute)
 }
 
 func testWithSession(t *testing.T, session *mgo.Session) {

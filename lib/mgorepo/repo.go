@@ -17,27 +17,6 @@ type Repo struct {
 	coll    string
 }
 
-type HasGetId interface {
-	GetId() string
-}
-
-type HasSetId interface {
-	SetId(id string)
-}
-
-// this should be a const but compiler complains "const initializer is not a constant"
-var hasIdInterfaceType reflect.Type
-
-func init() {
-	hasIdInterfaceType = reflect.TypeOf((*HasSetId)(nil)).Elem()
-}
-
-type wrapper struct {
-	Id bson.ObjectId `bson:"_id"`
-	T  string        `bson:"_t"`
-	V  interface{}
-}
-
 func New(s *mgo.Session, coll string) *Repo {
 	repo := Repo{
 		session: s,
@@ -52,10 +31,11 @@ func (r *Repo) SaveNew(item interface{}) (bson.ObjectId, error) {
 
 	coll := session.DB("").C(r.coll)
 
-	wrapper := wrap(item, bson.NewObjectId())
+	id := bson.NewObjectId()
+	wrapper := wrap(item, id)
 	err := coll.Insert(wrapper)
 
-	return wrapper.Id, err
+	return id, err
 }
 
 func (r *Repo) Update(id bson.ObjectId, item interface{}) error {
@@ -77,13 +57,13 @@ func (r *Repo) GetById(id bson.ObjectId) (interface{}, error) {
 	coll := session.DB("").C(r.coll)
 
 	// read wrapper
-	wrapper := wrapper{}
-	err := coll.Find(bson.M{"_id": id}).One(&wrapper)
+	var w map[string]interface{}
+	err := coll.Find(bson.M{"_id": id}).One(&w)
 	if err != nil {
 		return nil, err
 	}
 
-	i, err := unwrap(wrapper)
+	i, err := unwrap(w)
 	if err != nil {
 		return nil, errors.Wrap(err, "Unwrapping generated an error")
 	}
@@ -95,7 +75,7 @@ func (r *Repo) GetAll(result interface{}) error {
 
 	resultv := reflect.ValueOf(result)
 	if resultv.Kind() != reflect.Ptr {
-		panic("result argument must be a slice address")
+		log.Panic("result argument must be a slice address")
 	}
 
 	slicev := resultv.Elem()
@@ -104,7 +84,7 @@ func (r *Repo) GetAll(result interface{}) error {
 		slicev = slicev.Elem()
 	}
 	if slicev.Kind() != reflect.Slice {
-		panic("result argument must be a slice address")
+		log.Panic("result argument must be a slice address")
 	}
 
 	session := r.session.Copy()
@@ -115,7 +95,7 @@ func (r *Repo) GetAll(result interface{}) error {
 	iter := coll.Find(bson.M{}).Iter()
 
 	var errs = make([]string, 0)
-	var w wrapper
+	var w map[string]interface{}
 	for iter.Next(&w) {
 		item, err := unwrap(w)
 		if err != nil {
@@ -146,75 +126,48 @@ func (r *Repo) Delete(id bson.ObjectId) error {
 	return coll.RemoveId(id)
 }
 
-func wrap(item interface{}, id bson.ObjectId) wrapper {
-	t := util.ConcreteValue(item).Type()
+func wrap(item interface{}, id bson.ObjectId) map[string]interface{} {
+	value := util.ConcreteValue(item)
+	t := value.Type()
 
-	setId(item, id)
-
-	// The value is saved as a wrapper value, with V being the actual value and T being its type key.
-	wrapper := wrapper{
-		Id: id,
-		T:  typeregistry.GetKey(t),
-		V:  item,
+	if !(t.Kind() == reflect.Struct) {
+		log.Panic("expected struct")
 	}
-	return wrapper
+
+	itemAsMap := structToMap(value.Interface())
+
+	itemAsMap["_id"] = id
+	itemAsMap["_t"] = typeregistry.GetKey(t)
+
+	return itemAsMap
 }
 
-func setId(item interface{}, id bson.ObjectId) {
+func structToMap(item interface{}) map[string]interface{} {
 
-	defer util.RecoverPanicAndLog(nil, "setId failed")
-
-	log.Printf("item = %T %+[1]v", item)
-
-	v := reflect.ValueOf(item)
-	log.Printf("value = %v %v %+v", v.Kind(), v.Type(), v)
-
-	// if we don't have a pointer, we won't be able to call SetId
-	if !(v.Kind() == reflect.Ptr) {
-		log.Print("not a pointer")
-		return
+	var result map[string]interface{}
+	err := mapstructure.Decode(item, &result)
+	if err != nil {
+		log.Panic(err)
 	}
 
-	// get concrete structure
-	for v.Kind() != reflect.Struct {
-		v = v.Elem()
-		log.Printf("elem = %v %v %+v", v.Kind(), v.Type(), v)
-	}
-
-	// obtain pointer to this structure
-	if !v.CanAddr() {
-		log.Print("not an addressable value")
-		return
-	}
-	pv := v.Addr()
-	log.Printf("ptr = %v %v %+v", pv.Kind(), pv.Type(), pv)
-
-	// if it does not implement HasSetId, nothing to do
-	if !pv.Type().Implements(hasIdInterfaceType) {
-		return
-	}
-
-	// convert to HasSetId type and call SetId
-	itemWithId := pv.Interface().(HasSetId)
-	log.Printf("HasSetId = %T %[1]v", itemWithId)
-	itemWithId.SetId(id.Hex())
-
+	return result
 }
 
-func unwrap(w wrapper) (interface{}, error) {
+func unwrap(item map[string]interface{}) (interface{}, error) {
 
 	// Obtain Type from from its key from the type registry
 	// The type must have been previously registered with typeregistry.Register
-	t := typeregistry.GetType(w.T)
+	typeKey := item["_t"].(string)
+	t := typeregistry.GetType(typeKey)
 	if t == nil {
-		log.Panicf("Unknown type key '%s' - did you forget to register the type?", w.T)
+		log.Panicf("Unknown type key '%s' - did you forget to register the type?", typeKey)
 	}
 
 	// get a pointer to a new value of this type
 	pt := reflect.New(t)
 
 	// populate value from wrapper.V
-	err := mapstructure.Decode(w.V, pt.Interface())
+	err := mapstructure.Decode(item, pt.Interface())
 	if err != nil {
 		return nil, err
 	}

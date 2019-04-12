@@ -53,7 +53,7 @@ func (r *sourceRepoImpl) GetById(id bson.ObjectId) (domain.BackupSource, error) 
 }
 
 func (r *sourceRepoImpl) GetAll() ([]domain.BackupSource, error) {
-	result := make([]domain.BackupSource, 0)
+	var result []domain.BackupSource
 	err := r.Repo.GetAll(&result)
 	return result, err
 }

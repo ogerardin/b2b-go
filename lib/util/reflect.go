@@ -28,17 +28,17 @@ func Introspect(v interface{}) {
 	print(context, rv)
 }
 
-func ConcreteValue(v interface{}) reflect.Value {
-	log.Tracef("%T %[1]V", v)
-	rv := reflect.ValueOf(v)
-	log.Tracef("%T %[1]V", rv)
-	for rv.Kind() == reflect.Ptr || rv.Kind() == reflect.Interface {
-		rv = rv.Elem()
-		log.Tracef("%T %[1]V", rv)
-	}
-	return rv
-}
-
 func print(context string, rv reflect.Value) {
 	fmt.Println(">>>"+context, rv.Kind(), rv.Type())
+}
+
+func ConcreteValue(v interface{}) reflect.Value {
+	rv := reflect.ValueOf(v)
+	log.Trace(rv.Type(), rv.Kind(), rv)
+
+	for rv.Kind() == reflect.Ptr || rv.Kind() == reflect.Interface {
+		rv = rv.Elem()
+		log.Trace(rv.Type(), rv.Kind(), rv)
+	}
+	return rv
 }

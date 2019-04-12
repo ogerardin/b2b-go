@@ -1,6 +1,9 @@
 package typeregistry
 
-import "reflect"
+import (
+	"log"
+	"reflect"
+)
 
 var types map[string]reflect.Type
 
@@ -14,7 +17,13 @@ func Register(t reflect.Type) {
 }
 
 func GetKey(t reflect.Type) string {
-	key := t.PkgPath() + "." + t.Name()
+	pkgPath := t.PkgPath()
+	name := t.Name()
+	if len(pkgPath) == 0 || len(name) == 0 {
+		log.Panic("non-defined type")
+	}
+
+	key := pkgPath + "." + name
 	return key
 }
 
