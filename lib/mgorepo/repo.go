@@ -75,7 +75,7 @@ func (r *Repo) GetAll(result interface{}) error {
 
 	resultv := reflect.ValueOf(result)
 	if resultv.Kind() != reflect.Ptr {
-		log.Panic("result argument must be a slice address")
+		log.Panic("not a pointer")
 	}
 
 	slicev := resultv.Elem()
@@ -84,7 +84,7 @@ func (r *Repo) GetAll(result interface{}) error {
 		slicev = slicev.Elem()
 	}
 	if slicev.Kind() != reflect.Slice {
-		log.Panic("result argument must be a slice address")
+		log.Panic("not a slice")
 	}
 
 	session := r.session.Copy()

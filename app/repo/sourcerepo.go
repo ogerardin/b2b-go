@@ -7,12 +7,6 @@ import (
 	"github.com/globalsign/mgo/bson"
 )
 
-type sourceRepoImpl struct {
-	mgorepo.Repo
-}
-
-var _ SourceRepo = &sourceRepoImpl{}
-
 type SourceRepo interface {
 	SaveNew(source domain.BackupSource) (bson.ObjectId, error)
 	Update(id bson.ObjectId, source domain.BackupSource) error
@@ -20,6 +14,12 @@ type SourceRepo interface {
 	GetAll() ([]domain.BackupSource, error)
 	Delete(id bson.ObjectId) error
 }
+
+type sourceRepoImpl struct {
+	mgorepo.Repo
+}
+
+var _ SourceRepo = &sourceRepoImpl{}
 
 func NewSourceRepo(s *mgo.Session) SourceRepo {
 	repo := &sourceRepoImpl{

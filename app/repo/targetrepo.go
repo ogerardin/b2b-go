@@ -9,11 +9,26 @@ import (
 
 type TargetRepo interface {
 	SaveNew(source domain.BackupTarget) (bson.ObjectId, error)
+	Update(id bson.ObjectId, target domain.BackupTarget) error
 	GetById(id bson.ObjectId) (domain.BackupTarget, error)
+	GetAll() ([]domain.BackupTarget, error)
+	Delete(id bson.ObjectId) error
 }
 
 type targetRepoImpl struct {
 	mgorepo.Repo
+}
+
+var _ TargetRepo = &targetRepoImpl{}
+
+func (r *targetRepoImpl) Update(id bson.ObjectId, target domain.BackupTarget) error {
+	return r.Repo.Update(id, target)
+}
+
+func (r *targetRepoImpl) GetAll() ([]domain.BackupTarget, error) {
+	var result []domain.BackupTarget
+	err := r.Repo.GetAll(result)
+	return result, err
 }
 
 func NewTargetRepo(s *mgo.Session) TargetRepo {
