@@ -13,23 +13,20 @@ import (
 )
 
 type Repo struct {
-	session *mgo.Session
-	coll    string
+	session  *mgo.Session
+	database string
+	coll     string
 }
 
-func New(s *mgo.Session, coll string) *Repo {
-	repo := Repo{
-		session: s,
-		coll:    coll,
-	}
-	return &repo
+func NewRepo(session *mgo.Session, database string, coll string) *Repo {
+	return &Repo{session: session, database: database, coll: coll}
 }
 
 func (r *Repo) SaveNew(item interface{}) (bson.ObjectId, error) {
 	session := r.session.Copy()
 	defer session.Close()
 
-	coll := session.DB("").C(r.coll)
+	coll := session.DB(r.database).C(r.coll)
 
 	id := bson.NewObjectId()
 	wrapper := wrap(item, id)
@@ -42,7 +39,7 @@ func (r *Repo) Update(id bson.ObjectId, item interface{}) error {
 	session := r.session.Copy()
 	defer session.Close()
 
-	coll := session.DB("").C(r.coll)
+	coll := session.DB(r.database).C(r.coll)
 
 	wrapper := wrap(item, id)
 	err := coll.UpdateId(id, wrapper)
@@ -54,7 +51,7 @@ func (r *Repo) GetById(id bson.ObjectId) (interface{}, error) {
 	session := r.session.Copy()
 	defer session.Close()
 
-	coll := session.DB("").C(r.coll)
+	coll := session.DB(r.database).C(r.coll)
 
 	// read wrapper
 	var w map[string]interface{}
@@ -90,7 +87,7 @@ func (r *Repo) GetAll(result interface{}) error {
 	session := r.session.Copy()
 	defer session.Close()
 
-	coll := session.DB("").C(r.coll)
+	coll := session.DB(r.database).C(r.coll)
 
 	iter := coll.Find(bson.M{}).Iter()
 
@@ -121,7 +118,7 @@ func (r *Repo) Delete(id bson.ObjectId) error {
 	session := r.session.Copy()
 	defer session.Close()
 
-	coll := session.DB("").C(r.coll)
+	coll := session.DB(r.database).C(r.coll)
 
 	return coll.RemoveId(id)
 }
@@ -166,7 +163,7 @@ func unwrap(item map[string]interface{}) (interface{}, error) {
 	// get a pointer to a new value of this type
 	pt := reflect.New(t)
 
-	// populate value from wrapper.V
+	// populate value from map
 	err := mapstructure.Decode(item, pt.Interface())
 	if err != nil {
 		return nil, err

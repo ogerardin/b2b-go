@@ -33,7 +33,7 @@ func (r *targetRepoImpl) GetAll() ([]domain.BackupTarget, error) {
 
 func NewTargetRepo(s *mgo.Session) TargetRepo {
 	return &targetRepoImpl{
-		*mgorepo.New(s, "targets"),
+		*mgorepo.NewRepo(s, "", "targets"),
 	}
 }
 

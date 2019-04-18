@@ -23,7 +23,7 @@ var _ SourceRepo = &sourceRepoImpl{}
 
 func NewSourceRepo(s *mgo.Session) SourceRepo {
 	repo := &sourceRepoImpl{
-		*mgorepo.New(s, "sources"),
+		*mgorepo.NewRepo(s, "", "sources"),
 	}
 
 	//FIXME for testing, remove
