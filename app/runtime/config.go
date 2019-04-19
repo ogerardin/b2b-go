@@ -1,6 +1,8 @@
 package runtime
 
-import "github.com/containous/flaeg"
+import (
+	"github.com/spf13/viper"
+)
 
 type Configuration struct {
 	LogLevel      string `short:"l" description:"Log level"`
@@ -11,9 +13,7 @@ type Configuration struct {
 	MongoDataPath string `description:"data path for MongoDB (empty = temporary path)"`
 	Profiles      string `description:"Active profiles (comma separated)"`
 	Version       bool   `description:"Print version information and quits"`
-	// used by Staert
-	Flaeg   *flaeg.Flaeg
-	Command *flaeg.Command
+	Viper         *viper.Viper
 }
 
 func DefaultConfig() *Configuration {

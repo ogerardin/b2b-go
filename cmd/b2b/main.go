@@ -7,13 +7,17 @@ import (
 	"b2b-go/lib/util"
 	"b2b-go/meta"
 	"context"
+	"encoding/json"
 	"fmt"
-	"github.com/containous/flaeg"
-	"github.com/containous/staert"
 	"github.com/gin-gonic/gin"
+	"github.com/pkg/errors"
+	log "github.com/sirupsen/logrus"
+	"github.com/spf13/pflag"
+	"github.com/spf13/viper"
 	"go.uber.org/fx"
 	"os"
 	"runtime/pprof"
+	"strconv"
 	"strings"
 )
 
@@ -22,11 +26,7 @@ func main() {
 	var conf = runtime.DefaultConfig()
 
 	// parse command line options
-	err := parseCommandLine(conf)
-	if err != nil {
-		os.Stderr.WriteString(err.Error() + "\n")
-		os.Exit(-1)
-	}
+	parseCommandLine(conf)
 
 	// if version requested, do it and exit
 	if conf.Version {
@@ -35,17 +35,41 @@ func main() {
 	}
 
 	// load configuration according to active profiles
-	err = loadExternalConfig(conf)
+	err := loadExternalConfig(conf)
 	if err != nil {
 		os.Stderr.WriteString(err.Error() + "\n")
 		os.Exit(-1)
 	}
 
-	fmt.Printf("%+v\n", conf)
+	//fmt.Printf("%+v\n", conf)
+	confBytes, err := json.MarshalIndent(conf, " ", "  ")
+	log.Infof("Conf %s", string(confBytes))
 
 	// start the thing
 	startApp(conf)
 
+}
+
+func parseCommandLine(conf *runtime.Configuration) {
+
+	pflag.Bool("version", false, "print version information and quit")
+	pflag.String("profiles", "", "comma separated list of active profiles")
+	pflag.Int("port", conf.Port, "listening port")
+	//TODO other flags
+	pflag.Parse()
+
+	v := viper.New()
+	err := v.BindPFlags(pflag.CommandLine)
+	if err != nil {
+		panic(errors.Wrap(err, "failed to parse command line"))
+	}
+
+	err = v.Unmarshal(conf)
+	if err != nil {
+		panic(errors.Wrap(err, "failed to unmarshal command line"))
+	}
+
+	conf.Viper = v
 }
 
 func loadExternalConfig(conf *runtime.Configuration) error {
@@ -53,36 +77,26 @@ func loadExternalConfig(conf *runtime.Configuration) error {
 	profiles = util.Map(profiles, strings.TrimSpace)
 	fmt.Printf("Active profiles: %v\n", profiles)
 
-	s := staert.NewStaert(conf.Command)
-	s.AddSource(staert.NewTomlSource("b2b", []string{"./conf", "."}))
+	v := conf.Viper
+	v.AddConfigPath(".")
+	v.SetConfigName("b2b")
+	err := conf.Viper.MergeInConfig()
+	if err != nil {
+		log.Warn(errors.Wrap(err, "Failed to load main config"))
+	}
+
 	for _, profile := range profiles {
-		s.AddSource(staert.NewTomlSource("b2b-"+profile, []string{"./conf", "."}))
+		v.SetConfigName("b2b-" + profile)
+		err := v.MergeInConfig()
+		if err != nil {
+			log.Warn(errors.Wrapf(err, "Failed to merge profile %s", profile))
+		}
 	}
-	s.AddSource(conf.Flaeg)
 
-	_, err := s.LoadConfig()
-	return err
-}
-
-func command(conf *runtime.Configuration) *flaeg.Command {
-	command := &flaeg.Command{
-		Name:                  "b2b",
-		Description:           "Peer-to-peer backup",
-		Config:                conf,
-		DefaultPointersConfig: runtime.DefaultPointersConfig(),
+	err = v.Unmarshal(conf)
+	if err != nil {
+		panic(errors.Wrap(err, "Failed to unmarshall config"))
 	}
-	return command
-}
-
-func parseCommandLine(conf *runtime.Configuration) error {
-	command := command(conf)
-
-	f := flaeg.New(command, os.Args[1:])
-	cmd, err := f.Parse(command)
-	// store these in the config for later use by Staert
-	conf.Flaeg = f
-	conf.Command = cmd
-
 	return err
 }
 
@@ -150,11 +164,11 @@ func handleOptions(lc fx.Lifecycle, conf *runtime.Configuration) error {
 	return nil
 }
 
-func startGin(lc fx.Lifecycle, g *gin.Engine) {
+func startGin(lc fx.Lifecycle, g *gin.Engine, conf *runtime.Configuration) {
 
 	lc.Append(fx.Hook{
 		OnStart: func(c context.Context) error {
-			go g.Run(":8080")
+			go g.Run(":" + strconv.Itoa(conf.Port))
 			return nil
 		},
 		//OnStop: func(c context.Context) error {
