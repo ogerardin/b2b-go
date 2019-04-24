@@ -8,9 +8,11 @@ require (
 	github.com/gin-contrib/sse v0.0.0-20190301062529-5545eab6dad3 // indirect
 	github.com/gin-gonic/gin v1.3.0
 	github.com/globalsign/mgo v0.0.0-20181015135952-eeefdecb41b8
+	github.com/go-yaml/yaml v2.1.0+incompatible // indirect
 	github.com/golang/protobuf v1.3.0 // indirect
 	github.com/google/uuid v1.1.0
 	github.com/hashicorp/go-version v1.1.0 // indirect
+	github.com/heetch/confita v0.5.1 // indirect
 	github.com/json-iterator/go v1.1.5 // indirect
 	github.com/kr/pretty v0.1.0 // indirect
 	github.com/magefile/mage v1.8.0

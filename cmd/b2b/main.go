@@ -8,9 +8,12 @@ import (
 	"b2b-go/meta"
 	"context"
 	"fmt"
-	"github.com/containous/flaeg"
-	"github.com/containous/staert"
 	"github.com/gin-gonic/gin"
+	"github.com/heetch/confita"
+	"github.com/heetch/confita/backend"
+	"github.com/heetch/confita/backend/env"
+	"github.com/heetch/confita/backend/file"
+	"github.com/heetch/confita/backend/flags"
 	"go.uber.org/fx"
 	"os"
 	"runtime/pprof"
@@ -48,41 +51,33 @@ func main() {
 
 }
 
+func parseCommandLine(conf *runtime.Configuration) error {
+	loader := confita.NewLoader(
+		flags.NewBackend(),
+	)
+
+	err := loader.Load(context.Background(), conf)
+	return err
+}
+
 func loadExternalConfig(conf *runtime.Configuration) error {
 	profiles := strings.Split(conf.Profiles, ",")
 	profiles = util.Map(profiles, strings.TrimSpace)
 	fmt.Printf("Active profiles: %v\n", profiles)
 
-	s := staert.NewStaert(conf.Command)
-	s.AddSource(staert.NewTomlSource("b2b", []string{"./conf", "."}))
+	backends := make([]backend.Backend, 0)
+	backends = append(backends, env.NewBackend())
+	backends = append(backends, file.NewBackend("conf/b2b.toml"))
 	for _, profile := range profiles {
-		s.AddSource(staert.NewTomlSource("b2b-"+profile, []string{"./conf", "."}))
+		backends = append(backends, file.NewBackend("conf/b2b-"+profile+".toml"))
 	}
-	s.AddSource(conf.Flaeg)
+	backends = append(backends, flags.NewBackend())
 
-	_, err := s.LoadConfig()
-	return err
-}
+	loader := confita.NewLoader(
+		backends...,
+	)
 
-func command(conf *runtime.Configuration) *flaeg.Command {
-	command := &flaeg.Command{
-		Name:                  "b2b",
-		Description:           "Peer-to-peer backup",
-		Config:                conf,
-		DefaultPointersConfig: runtime.DefaultPointersConfig(),
-	}
-	return command
-}
-
-func parseCommandLine(conf *runtime.Configuration) error {
-	command := command(conf)
-
-	f := flaeg.New(command, os.Args[1:])
-	cmd, err := f.Parse(command)
-	// store these in the config for later use by Staert
-	conf.Flaeg = f
-	conf.Command = cmd
-
+	err := loader.Load(context.Background(), conf)
 	return err
 }
 

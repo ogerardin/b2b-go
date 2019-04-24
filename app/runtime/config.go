@@ -1,19 +1,14 @@
 package runtime
 
-import "github.com/containous/flaeg"
-
 type Configuration struct {
-	LogLevel      string `short:"l" description:"Log level"`
-	Port          int    `short:"p" description:"Port number for web interface"`
-	HideConsole   bool
-	CpuProfile    bool   `description:"Activate CPU profiling"`
-	MongoPort     int    `short:"mp" description:"Port number for mongod (0 = automatic)"`
-	MongoDataPath string `description:"data path for MongoDB (empty = temporary path)"`
-	Profiles      string `description:"Active profiles (comma separated)"`
-	Version       bool   `description:"Print version information and quits"`
-	// used by Staert
-	Flaeg   *flaeg.Flaeg
-	Command *flaeg.Command
+	LogLevel      string `config:"log"`
+	Port          int    `config:"port"`
+	HideConsole   bool   `config:"hideconsole"`
+	CpuProfile    bool   `config:"prof"`
+	MongoPort     int    `config:"mongoport"`
+	MongoDataPath string `config:"datapath"`
+	Profiles      string `config:"profiles"`
+	Version       bool   `config:"version"`
 }
 
 func DefaultConfig() *Configuration {
