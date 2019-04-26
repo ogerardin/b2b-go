@@ -4,15 +4,14 @@ import (
 	"b2b-go/app/domain"
 	"b2b-go/lib/mgorepo"
 	"github.com/globalsign/mgo"
-	"github.com/globalsign/mgo/bson"
 )
 
 type TargetRepo interface {
-	SaveNew(source domain.BackupTarget) (bson.ObjectId, error)
-	Update(id bson.ObjectId, target domain.BackupTarget) error
-	GetById(id bson.ObjectId) (domain.BackupTarget, error)
+	SaveNew(source domain.BackupTarget) (string, error)
+	Update(id string, target domain.BackupTarget) error
+	GetById(id string) (domain.BackupTarget, error)
 	GetAll() ([]domain.BackupTarget, error)
-	Delete(id bson.ObjectId) error
+	Delete(id string) error
 }
 
 type targetRepoImpl struct {
@@ -21,7 +20,7 @@ type targetRepoImpl struct {
 
 var _ TargetRepo = &targetRepoImpl{}
 
-func (r *targetRepoImpl) Update(id bson.ObjectId, target domain.BackupTarget) error {
+func (r *targetRepoImpl) Update(id string, target domain.BackupTarget) error {
 	return r.Repo.Update(id, target)
 }
 
@@ -33,16 +32,23 @@ func (r *targetRepoImpl) GetAll() ([]domain.BackupTarget, error) {
 
 func NewTargetRepo(s *mgo.Session) TargetRepo {
 	return &targetRepoImpl{
-		*mgorepo.NewRepo(s, "", "targets"),
+		*mgorepo.New(s, "", "targets"),
 	}
 }
 
-func (r *targetRepoImpl) SaveNew(target domain.BackupTarget) (bson.ObjectId, error) {
-	saved, err := r.Repo.SaveNew(target)
-	return saved, err
+func (r *targetRepoImpl) SaveNew(target domain.BackupTarget) (string, error) {
+	id, err := r.Repo.SaveNew(target)
+	return id.(string), err
 }
 
-func (r *targetRepoImpl) GetById(id bson.ObjectId) (domain.BackupTarget, error) {
+func (r *targetRepoImpl) GetById(id string) (domain.BackupTarget, error) {
 	retrieved, err := r.Repo.GetById(id)
-	return retrieved.(domain.BackupTarget), err
+	if err != nil {
+		return nil, err
+	}
+	return retrieved.(domain.BackupTarget), nil
+}
+
+func (r *targetRepoImpl) Delete(id string) error {
+	return r.Repo.Delete(id)
 }

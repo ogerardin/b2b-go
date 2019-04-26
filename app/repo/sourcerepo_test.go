@@ -5,7 +5,6 @@ import (
 	"b2b-go/app/runtime"
 	"fmt"
 	"github.com/globalsign/mgo"
-	"github.com/globalsign/mgo/bson"
 	"go.uber.org/fx"
 	"go.uber.org/fx/fxtest"
 	"testing"
@@ -68,7 +67,7 @@ func testSourceRepoWithSession(t *testing.T, session *mgo.Session) {
 	//time.Sleep(time.Hour)
 }
 
-func saveSource(t *testing.T, repo SourceRepo, source domain.BackupSource) bson.ObjectId {
+func saveSource(t *testing.T, repo SourceRepo, source domain.BackupSource) interface{} {
 	id, err := repo.SaveNew(source)
 	if err != nil {
 		t.Fatal(err)
@@ -77,7 +76,7 @@ func saveSource(t *testing.T, repo SourceRepo, source domain.BackupSource) bson.
 	return id
 }
 
-func loadSource(t *testing.T, repo SourceRepo, id bson.ObjectId) {
+func loadSource(t *testing.T, repo SourceRepo, id interface{}) {
 	loadedSource1, err := repo.GetById(id)
 	if err != nil {
 		t.Fatal(err)

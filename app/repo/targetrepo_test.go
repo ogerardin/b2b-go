@@ -5,7 +5,6 @@ import (
 	"b2b-go/app/runtime"
 	"fmt"
 	"github.com/globalsign/mgo"
-	"github.com/globalsign/mgo/bson"
 	"go.uber.org/fx"
 	"go.uber.org/fx/fxtest"
 	"testing"
@@ -45,7 +44,7 @@ func testTargetRepoWithSession(t *testing.T, session *mgo.Session) {
 	//time.Sleep(time.Hour)
 }
 
-func saveTarget(t *testing.T, repo TargetRepo, target domain.BackupTarget) bson.ObjectId {
+func saveTarget(t *testing.T, repo TargetRepo, target domain.BackupTarget) interface{} {
 	id, err := repo.SaveNew(target)
 	if err != nil {
 		t.Fatal(err)
@@ -54,7 +53,7 @@ func saveTarget(t *testing.T, repo TargetRepo, target domain.BackupTarget) bson.
 	return id
 }
 
-func loadTarget(t *testing.T, repo TargetRepo, id bson.ObjectId) {
+func loadTarget(t *testing.T, repo TargetRepo, id interface{}) {
 	loaded, err := repo.GetById(id)
 	if err != nil {
 		t.Fatal(err)

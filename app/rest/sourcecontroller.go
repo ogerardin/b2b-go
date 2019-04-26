@@ -5,8 +5,6 @@ import (
 	"b2b-go/app/repo"
 	"b2b-go/lib/util"
 	"github.com/gin-gonic/gin"
-	"github.com/globalsign/mgo/bson"
-	"github.com/pkg/errors"
 	"net/http"
 	"reflect"
 )
@@ -26,8 +24,7 @@ func RegisterSourceRoutes(r repo.SourceRepo, g *gin.Engine) {
 
 	g.GET("/api/sources/:id", func(c *gin.Context) {
 		id := c.Params.ByName("id")
-		objectId := bson.ObjectIdHex(id)
-		source, err := r.GetById(objectId)
+		source, err := r.GetById(id)
 		if err != nil {
 			_ = c.AbortWithError(http.StatusInternalServerError, err)
 			return
@@ -37,8 +34,7 @@ func RegisterSourceRoutes(r repo.SourceRepo, g *gin.Engine) {
 
 	g.DELETE("/api/sources/:id", func(c *gin.Context) {
 		id := c.Params.ByName("id")
-		objectId := bson.ObjectIdHex(id)
-		err := r.Delete(objectId)
+		err := r.Delete(id)
 		if err != nil {
 			_ = c.AbortWithError(http.StatusInternalServerError, err)
 			return
@@ -47,7 +43,6 @@ func RegisterSourceRoutes(r repo.SourceRepo, g *gin.Engine) {
 	})
 
 	g.POST("/api/sources", func(c *gin.Context) {
-
 		source, ok := util.MapBody(c, targetType)
 		if !ok {
 			return
@@ -65,20 +60,14 @@ func RegisterSourceRoutes(r repo.SourceRepo, g *gin.Engine) {
 	})
 
 	g.PUT("/api/sources/:id", func(c *gin.Context) {
-
 		id := c.Params.ByName("id")
-		if !bson.IsObjectIdHex(id) {
-			_ = c.AbortWithError(http.StatusBadRequest, errors.Errorf("Not a valid object ID: %s", id))
-			return
-		}
-		objectId := bson.ObjectIdHex(id)
 
 		source, ok := util.MapBody(c, targetType)
 		if !ok {
 			return
 		}
 
-		err := r.Update(objectId, source.(domain.BackupSource))
+		err := r.Update(id, source.(domain.BackupSource))
 		if err != nil {
 			_ = c.AbortWithError(http.StatusInternalServerError, err)
 			return

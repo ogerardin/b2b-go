@@ -4,15 +4,14 @@ import (
 	"b2b-go/app/domain"
 	"b2b-go/lib/mgorepo"
 	"github.com/globalsign/mgo"
-	"github.com/globalsign/mgo/bson"
 )
 
 type SourceRepo interface {
-	SaveNew(source domain.BackupSource) (bson.ObjectId, error)
-	Update(id bson.ObjectId, source domain.BackupSource) error
-	GetById(id bson.ObjectId) (domain.BackupSource, error)
+	SaveNew(source domain.BackupSource) (string, error)
+	Update(id string, source domain.BackupSource) error
+	GetById(id string) (domain.BackupSource, error)
 	GetAll() ([]domain.BackupSource, error)
-	Delete(id bson.ObjectId) error
+	Delete(id string) error
 }
 
 type sourceRepoImpl struct {
@@ -23,7 +22,7 @@ var _ SourceRepo = &sourceRepoImpl{}
 
 func NewSourceRepo(s *mgo.Session) SourceRepo {
 	repo := &sourceRepoImpl{
-		*mgorepo.NewRepo(s, "", "sources"),
+		*mgorepo.New(s, "", "sources"),
 	}
 
 	//FIXME for testing, remove
@@ -38,22 +37,29 @@ func NewSourceRepo(s *mgo.Session) SourceRepo {
 	return repo
 }
 
-func (r *sourceRepoImpl) SaveNew(source domain.BackupSource) (bson.ObjectId, error) {
-	saved, err := r.Repo.SaveNew(&source)
-	return saved, err
+func (r *sourceRepoImpl) SaveNew(source domain.BackupSource) (string, error) {
+	id, err := r.Repo.SaveNew(&source)
+	return id.(string), err
 }
 
-func (r *sourceRepoImpl) Update(id bson.ObjectId, source domain.BackupSource) error {
+func (r *sourceRepoImpl) Update(id string, source domain.BackupSource) error {
 	return r.Repo.Update(id, source)
 }
 
-func (r *sourceRepoImpl) GetById(id bson.ObjectId) (domain.BackupSource, error) {
+func (r *sourceRepoImpl) GetById(id string) (domain.BackupSource, error) {
 	retrieved, err := r.Repo.GetById(id)
-	return retrieved.(domain.BackupSource), err
+	if err != nil {
+		return nil, err
+	}
+	return retrieved.(domain.BackupSource), nil
 }
 
 func (r *sourceRepoImpl) GetAll() ([]domain.BackupSource, error) {
 	var result []domain.BackupSource
 	err := r.Repo.GetAll(&result)
 	return result, err
+}
+
+func (r *sourceRepoImpl) Delete(id string) error {
+	return r.Repo.Delete(id)
 }

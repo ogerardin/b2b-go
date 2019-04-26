@@ -8,15 +8,12 @@ type BackupTarget interface {
 }
 
 type BackupTargetBase struct {
-	Enabled bool
-	Name    string
+	Id      string `mapstructure:"_id" json:"id"`
+	Enabled bool   `json:"enabled"`
+	Name    string `json:"name"`
 }
 
 func (BackupTargetBase) backupTarget() {}
-
-func (btb *BackupTargetBase) SetId(id string) {
-	btb.SetId(id)
-}
 
 func (btb BackupTargetBase) Desc() string {
 	return fmt.Sprintf("BackupTargetBase (%+v)", btb)
