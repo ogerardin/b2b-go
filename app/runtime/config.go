@@ -12,8 +12,8 @@ type Configuration struct {
 	Profiles      string `description:"Active profiles (comma separated)"`
 	Version       bool   `description:"Print version information and quits"`
 	// used by Staert
-	Flaeg   *flaeg.Flaeg
-	Command *flaeg.Command
+	Flaeg   *flaeg.Flaeg   `json:"-"`
+	Command *flaeg.Command `json:"-"`
 }
 
 func DefaultConfig() *Configuration {

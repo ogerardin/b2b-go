@@ -7,11 +7,13 @@ import (
 	"b2b-go/lib/util"
 	"b2b-go/meta"
 	"context"
+	"encoding/json"
 	"fmt"
 	"github.com/containous/flaeg"
 	"github.com/containous/staert"
 	"github.com/gin-gonic/gin"
 	"go.uber.org/fx"
+	"log"
 	"os"
 	"runtime/pprof"
 	"strings"
@@ -25,7 +27,7 @@ func main() {
 	err := parseCommandLine(conf)
 	if err != nil {
 		os.Stderr.WriteString(err.Error() + "\n")
-		os.Exit(-1)
+		os.Exit(1)
 	}
 
 	// if version requested, do it and exit
@@ -38,10 +40,12 @@ func main() {
 	err = loadExternalConfig(conf)
 	if err != nil {
 		os.Stderr.WriteString(err.Error() + "\n")
-		os.Exit(-1)
+		os.Exit(2)
 	}
 
-	fmt.Printf("%+v\n", conf)
+	//fmt.Printf("%+v\n", conf)
+	confBytes, err := json.MarshalIndent(conf, " ", "  ")
+	log.Printf("Conf %s", string(confBytes))
 
 	// start the thing
 	startApp(conf)
