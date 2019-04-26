@@ -5,7 +5,6 @@ import (
 	"b2b-go/lib/typeregistry"
 	"fmt"
 	"github.com/globalsign/mgo"
-	"github.com/globalsign/mgo/bson"
 	"io/ioutil"
 	"os"
 	"reflect"
@@ -64,16 +63,16 @@ type TestRepo struct {
 
 func NewTestRepo(s *mgo.Session) *TestRepo {
 	return &TestRepo{
-		New(s, "test"),
+		New(s, "", "test"),
 	}
 }
 
-func (r *TestRepo) SaveNew(item I) (bson.ObjectId, error) {
+func (r *TestRepo) SaveNew(item I) (interface{}, error) {
 	saved, err := r.Repo.SaveNew(item)
 	return saved, err
 }
 
-func (r *TestRepo) GetById(id bson.ObjectId) (I, error) {
+func (r *TestRepo) GetById(id interface{}) (I, error) {
 	retrieved, err := r.Repo.GetById(id)
 	return retrieved.(I), err
 }

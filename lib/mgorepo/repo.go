@@ -13,29 +13,39 @@ import (
 )
 
 type Repo struct {
-	session  *mgo.Session
-	database string
-	coll     string
+	session     *mgo.Session
+	database    string
+	coll        string
+	idGenerator IdGenerator
 }
 
-func NewRepo(session *mgo.Session, database string, coll string) *Repo {
-	return &Repo{session: session, database: database, coll: coll}
+func New(session *mgo.Session, database string, coll string) *Repo {
+	return NewWithIdGenerator(session, database, coll, defaultGenerator())
 }
 
-func (r *Repo) SaveNew(item interface{}) (bson.ObjectId, error) {
+func NewWithIdGenerator(session *mgo.Session, database string, coll string, generator IdGenerator) *Repo {
+	return &Repo{
+		session:     session,
+		database:    database,
+		coll:        coll,
+		idGenerator: generator,
+	}
+}
+
+func (r *Repo) SaveNew(item interface{}) (interface{}, error) {
 	session := r.session.Copy()
 	defer session.Close()
 
 	coll := session.DB(r.database).C(r.coll)
 
-	id := bson.NewObjectId()
+	id := r.idGenerator.NewId()
 	wrapper := wrap(item, id)
 	err := coll.Insert(wrapper)
 
 	return id, err
 }
 
-func (r *Repo) Update(id bson.ObjectId, item interface{}) error {
+func (r *Repo) Update(id interface{}, item interface{}) error {
 	session := r.session.Copy()
 	defer session.Close()
 
@@ -47,25 +57,24 @@ func (r *Repo) Update(id bson.ObjectId, item interface{}) error {
 	return err
 }
 
-func (r *Repo) GetById(id bson.ObjectId) (interface{}, error) {
+func (r *Repo) GetById(id interface{}) (interface{}, error) {
 	session := r.session.Copy()
 	defer session.Close()
 
 	coll := session.DB(r.database).C(r.coll)
 
-	// read wrapper
 	var w map[string]interface{}
-	err := coll.Find(bson.M{"_id": id}).One(&w)
+	err := coll.FindId(id).One(&w)
 	if err != nil {
-		return nil, err
+		return nil, errors.Wrapf(err, "Mongo failed to retrieve document with id %v", id)
 	}
 
-	i, err := unwrap(w)
+	result, err := unwrap(w)
 	if err != nil {
 		return nil, errors.Wrap(err, "Unwrapping generated an error")
 	}
 
-	return i, nil
+	return result, nil
 }
 
 func (r *Repo) GetAll(result interface{}) error {
@@ -103,7 +112,7 @@ func (r *Repo) GetAll(result interface{}) error {
 	}
 	err := iter.Close()
 	if err != nil {
-		return err
+		return errors.Wrap(err, "Error while closing the query")
 	}
 
 	if len(errs) > 0 {
@@ -114,7 +123,7 @@ func (r *Repo) GetAll(result interface{}) error {
 	return nil
 }
 
-func (r *Repo) Delete(id bson.ObjectId) error {
+func (r *Repo) Delete(id interface{}) error {
 	session := r.session.Copy()
 	defer session.Close()
 
@@ -123,7 +132,7 @@ func (r *Repo) Delete(id bson.ObjectId) error {
 	return coll.RemoveId(id)
 }
 
-func wrap(item interface{}, id bson.ObjectId) map[string]interface{} {
+func wrap(item interface{}, id interface{}) map[string]interface{} {
 	value := util.ConcreteValue(item)
 	t := value.Type()
 

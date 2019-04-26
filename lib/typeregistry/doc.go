@@ -1,4 +1,4 @@
-// Implements a name-to-type mechanisme that allows a reflect.Type to be retrieved from a string representation
+// Implements a name-to-type mechanism that allows a reflect.Type to be retrieved from a string representation
 // at runtime, roughly similar to Java's Class.forName(). This in turn allows the mashalling/unmarshalling
 // of structures that are not known at compile-time, e.g. for persistence in a Mongo database or as a JSON object.
 //
@@ -8,4 +8,5 @@
 //      func init() {
 //  	    typeregistry.Register(reflect.TypeOf((*MyType)(nil)).Elem())
 //      }
+
 package typeregistry
