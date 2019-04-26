@@ -9,7 +9,7 @@ type IdGenerator interface {
 type ObjectIdGenerator struct{}
 
 func (*ObjectIdGenerator) NewId() interface{} {
-	return bson.NewObjectId()
+	return bson.NewObjectId().Hex()
 }
 
 func defaultGenerator() IdGenerator {
