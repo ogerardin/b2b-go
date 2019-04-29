@@ -16,3 +16,4 @@
 /.idea/
 /dist/
 !/test-fileset/bench32.exe
+*.log
