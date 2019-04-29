@@ -1,6 +1,6 @@
 // Provides a generic polymorphic MongoDB repository.
 //
-// SaveNew/Update methods accept any struct or pointer to a struut, and save it as a Mongo document in a given database/collection.
+// SaveNew/Update methods accept any struct or pointer to a struct, and save it as a Mongo document in a given database/collection.
 // Retrieval methods (GetById/GetAll) instantiate and populate the same struct type that was saved, by using reflection.
 //
 // The saved document has the following additional fields:
@@ -9,8 +9,8 @@
 // provide an IdGenerator to generate your own ID.
 //
 // - "_t" is a key that identifies the actual struct type that was passed. Since Go doesn't have a native mechanism
-// for converting a type to/from a string, we use a custom naming scheme (provided by package typeregistry). For
-// deserialization to work, the type must have been registered with typeregistry.Register().
+// for converting a reflect.Type object to/from a string, we use a custom naming scheme (provided by package typeregistry).
+// For deserialization to work, the type must have been registered with typeregistry.Register().
 //
 // Internally, this package uses https://github.com/mitchellh/mapstructure to map to and from structures. As a consequence:
 //

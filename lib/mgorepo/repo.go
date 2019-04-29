@@ -32,6 +32,8 @@ func NewWithIdGenerator(session *mgo.Session, database string, coll string, gene
 	}
 }
 
+// Save a new item in the repository. The document's ID is obtained by calling NewId() on the idGenerator.
+// In case of error, returns nil and the error; otherwise returns the assigned ID and nil.
 func (r *Repo) SaveNew(item interface{}) (interface{}, error) {
 	session := r.session.Copy()
 	defer session.Close()
@@ -42,9 +44,15 @@ func (r *Repo) SaveNew(item interface{}) (interface{}, error) {
 	wrapper := wrap(item, id)
 	err := coll.Insert(wrapper)
 
-	return id, err
+	if err != nil {
+		return nil, errors.Wrapf(err, "Mongo failed to save new document %v with id %v", item, id)
+	}
+	return id, nil
+
 }
 
+// Update the item having the specified ID with the passed data.
+// In case of error, returns the error; otherwise returns nil.
 func (r *Repo) Update(id interface{}, item interface{}) error {
 	session := r.session.Copy()
 	defer session.Close()
@@ -53,10 +61,15 @@ func (r *Repo) Update(id interface{}, item interface{}) error {
 
 	wrapper := wrap(item, id)
 	err := coll.UpdateId(id, wrapper)
+	if err != nil {
+		return errors.Wrapf(err, "Mongo failed to update document with id %v", id)
+	}
 
-	return err
+	return nil
 }
 
+// Retrieve the item having the specified ID.
+// In case of error, returns nil and the error; otherwise returns the item and nil.
 func (r *Repo) GetById(id interface{}) (interface{}, error) {
 	session := r.session.Copy()
 	defer session.Close()
@@ -77,6 +90,9 @@ func (r *Repo) GetById(id interface{}) (interface{}, error) {
 	return result, nil
 }
 
+// Retrieve all the items from the repository into the specified destination, which must be a pointer to a slice of the
+// appropriate type.
+// In case of error, returns the error; otherwise returns nil.
 func (r *Repo) GetAll(result interface{}) error {
 
 	resultv := reflect.ValueOf(result)
@@ -123,15 +139,29 @@ func (r *Repo) GetAll(result interface{}) error {
 	return nil
 }
 
+// Delete the item having the specified ID from the collection.
+// In case of error, returns the error; otherwise returns nil.
 func (r *Repo) Delete(id interface{}) error {
 	session := r.session.Copy()
 	defer session.Close()
 
 	coll := session.DB(r.database).C(r.coll)
 
-	return coll.RemoveId(id)
+	err := coll.RemoveId(id)
+	if err != nil {
+		return errors.Wrapf(err, "Mongo failed to delete document with id %v", id)
+	}
+
+	return nil
 }
 
+// Converts an item into a value that may be passed to Mongo driver's Insert/Update methods.
+// For flexibility this function returns a map with the following additional top-level keys:
+//
+//  - "_id" is the document identifier.
+//
+//  - "_t" is the original type's identifier as returned by typeregistry.GetKey()
+//
 func wrap(item interface{}, id interface{}) map[string]interface{} {
 	value := util.ConcreteValue(item)
 	t := value.Type()
