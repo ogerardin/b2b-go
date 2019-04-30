@@ -4,6 +4,7 @@ import (
 	"b2b-go/app/repo"
 	"b2b-go/app/rest"
 	"b2b-go/app/runtime"
+	"b2b-go/lib/log4go"
 	"b2b-go/lib/util"
 	"b2b-go/meta"
 	"context"
@@ -13,11 +14,12 @@ import (
 	"github.com/containous/staert"
 	"github.com/gin-gonic/gin"
 	"go.uber.org/fx"
-	"log"
 	"os"
 	"runtime/pprof"
 	"strings"
 )
+
+var log = log4go.GetDefaultLogger()
 
 func main() {
 
@@ -45,7 +47,7 @@ func main() {
 
 	//fmt.Printf("%+v\n", conf)
 	confBytes, err := json.MarshalIndent(conf, " ", "  ")
-	log.Printf("Conf %s", string(confBytes))
+	log.Debugf("Conf %s", string(confBytes))
 
 	// start the thing
 	startApp(conf)

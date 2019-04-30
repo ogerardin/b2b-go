@@ -28,17 +28,17 @@ func testConfig() {
 			{
 				Name:     "",
 				Level:    logrus.InfoLevel,
-				Appender: console,
+				Appender: &console,
 			},
 			{
 				Name:     "a",
 				Level:    logrus.InfoLevel,
-				Appender: file,
+				Appender: &file,
 			},
 			{
 				Name:     "a/b",
 				Level:    logrus.DebugLevel,
-				Appender: console,
+				Appender: &console,
 			},
 		},
 	}

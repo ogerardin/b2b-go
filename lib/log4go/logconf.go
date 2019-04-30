@@ -3,26 +3,32 @@ package log4go
 import (
 	"github.com/pkg/errors"
 	"github.com/sirupsen/logrus"
+	"log"
+	"os"
 	"runtime"
 	"strings"
 )
 
+// a cache of existing loggers by name
 var loggers = make(map[string]*CompositeLogger, 0)
 
+var debug = os.Getenv("debug_log4go") != ""
+
 type loggerContext struct {
-	appenders []LogAppender
 	name      string
+	appenders []LogAppender
 }
 
 func (context *loggerContext) newLogger() *CompositeLogger {
 	if len(context.appenders) == 0 {
-		logrus.Warnf("No Appender for context %s", context.name)
+		log.Printf("Warning: no appender for context '%s'", context.name)
 		return NewCompositeLogger()
 	}
 
 	loggers := make([]logrus.FieldLogger, 0)
 
 	for _, la := range context.appenders {
+		debugf("  creating logger for %s", la)
 		logger := logrus.New()
 		logger.SetLevel(la.Level)
 		logger.SetFormatter(la.Appender.Formatter)
@@ -30,29 +36,37 @@ func (context *loggerContext) newLogger() *CompositeLogger {
 		loggers = append(loggers, logrus.FieldLogger(logger))
 	}
 
-	return NewCompositeLogger(loggers...)
+	logger := NewCompositeLogger(loggers...)
+	debugf("Returning: %s", logger)
+	return logger
 }
 
-func defaultContext() loggerContext {
-	return loggerContext{
-		appenders: []LogAppender{},
+func debugf(fmt string, args ...interface{}) {
+	if debug {
+		log.Printf(fmt, args...)
 	}
+
 }
 
 func GetLogger(name string) *CompositeLogger {
+	debugf("GetLogger(%s)", name)
 	logger, found := loggers[name]
 	if found {
+		debugf("Returning logger from cache")
 		return logger
 	}
 
 	context := getContext(name)
+
 	logger = context.newLogger()
+	// store in cache
 	loggers[name] = logger
 
 	return logger
 }
 
 func GetDefaultLogger() *CompositeLogger {
+	debugf("GetDefaultLogger")
 	pc, _, _, ok := runtime.Caller(1)
 	if !ok {
 		panic(errors.New("Failed to access call stack"))

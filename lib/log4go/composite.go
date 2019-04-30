@@ -1,9 +1,16 @@
 package log4go
 
-import "github.com/sirupsen/logrus"
+import (
+	"fmt"
+	"github.com/sirupsen/logrus"
+)
 
 type CompositeLogger struct {
 	loggers []logrus.FieldLogger
+}
+
+func (cl *CompositeLogger) String() string {
+	return fmt.Sprintf("CompositeLogger{loggers:%#v}", cl.loggers)
 }
 
 func NewCompositeLogger(loggers ...logrus.FieldLogger) *CompositeLogger {

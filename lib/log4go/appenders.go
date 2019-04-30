@@ -9,6 +9,7 @@ import (
 
 func NewConsoleAppender() Appender {
 	return Appender{
+		name: "Console",
 		Formatter: &logrus.TextFormatter{
 			ForceColors: true,
 		},
@@ -22,6 +23,7 @@ func NewFileAppender(filename string) Appender {
 		panic(errors.Wrapf(err, "Failed to open file %s for writing", filename))
 	}
 	return Appender{
+		name:      "File: " + filename,
 		Formatter: &logrus.TextFormatter{},
 		Writer:    file,
 	}
