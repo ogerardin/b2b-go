@@ -1,4 +1,4 @@
-package logconf
+package log4go
 
 import (
 	"github.com/sirupsen/logrus"
@@ -7,6 +7,19 @@ import (
 
 func Test(t *testing.T) {
 
+	testConfig()
+
+	logger := GetLogger("a/b")
+
+	logger.Debugln("bla")
+
+	logger.Warnf("this is a warning: %s", "WARNING!")
+
+	logger.WithField("color", "blue").Info("We have a color")
+
+}
+
+func testConfig() {
 	console := NewConsoleAppender()
 	file := NewFileAppender("test.log")
 
@@ -29,9 +42,12 @@ func Test(t *testing.T) {
 			},
 		},
 	}
+}
 
-	logger := NewLogger("a/b")
+func TestPackage(t *testing.T) {
+	testConfig()
 
-	logger.Print("bla")
+	logger := GetDefaultLogger()
 
+	logger.Info("Hello logger")
 }

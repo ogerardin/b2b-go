@@ -1,4 +1,4 @@
-package logconf
+package log4go
 
 import (
 	"github.com/sirupsen/logrus"
@@ -12,8 +12,8 @@ type Appender struct {
 }
 
 type Config struct {
-	Appenders []Appender
-	Loggers   []LogAppender
+	//Appenders []Appender
+	Loggers []LogAppender
 }
 
 type LogAppender struct {
@@ -41,8 +41,8 @@ func loadConfig() *Config {
 
 func defaultConfig() *Config {
 	return &Config{
-		Appenders: []Appender{},
-		Loggers:   []LogAppender{},
+		//Appenders: []Appender{},
+		Loggers: []LogAppender{},
 	}
 }
 
