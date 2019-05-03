@@ -3,14 +3,14 @@ package slave_mongo
 import (
 	"bytes"
 	"fmt"
+	"github.com/globalsign/mgo"
+	"gopkg.in/tomb.v2"
+	"io"
 	"net"
 	"os"
 	"os/exec"
 	"strconv"
 	"time"
-
-	"github.com/globalsign/mgo"
-	"gopkg.in/tomb.v2"
 )
 
 // DBServer controls a MongoDB server process to be used within test suites.
@@ -19,17 +19,19 @@ import (
 // remain running for the duration of all tests, with the Wipe method being
 // called between tests (before each of them) to clear stored data. After all tests
 // are done, the Stop method should be called to stop the test server.
-//
-// Before the DBServer is used the SetPath method must be called to define
-// the location for the database files to be stored.
 type DBServer struct {
-	session *mgo.Session
-	output  bytes.Buffer
-	server  *exec.Cmd
-	dbpath  string
-	host    string
-	port    int
-	tomb    tomb.Tomb
+	session    *mgo.Session
+	output     bytes.Buffer
+	server     *exec.Cmd
+	dbpath     string
+	host       string
+	port       int
+	logAdapter io.Writer
+	tomb       tomb.Tomb
+}
+
+func (dbs *DBServer) SetLogAdapter(logAdapter io.Writer) {
+	dbs.logAdapter = logAdapter
 }
 
 var terminateProcess = func(p *os.Process) {
@@ -85,8 +87,13 @@ func (dbs *DBServer) Start() {
 	dbs.server = exec.Command("mongod", args...)
 	//dbs.server.Stdout = &dbs.output
 	//dbs.server.Stderr = &dbs.output
-	dbs.server.Stdout = os.Stdout
-	dbs.server.Stderr = os.Stderr
+	if dbs.logAdapter != nil {
+		dbs.server.Stdout = dbs.logAdapter
+		dbs.server.Stderr = dbs.logAdapter
+	} else {
+		dbs.server.Stdout = os.Stdout
+		dbs.server.Stderr = os.Stderr
+	}
 	err = dbs.server.Start()
 	if err != nil {
 		// print error to facilitate troubleshooting as the panic will be caught in a panic handler
@@ -102,8 +109,9 @@ func (dbs *DBServer) monitor() error {
 	if dbs.tomb.Alive() {
 		// Present some debugging information.
 		fmt.Fprintf(os.Stderr, "---- mongod process died unexpectedly:\n")
-		fmt.Fprintf(os.Stderr, "%s", dbs.output.Bytes())
+		//		fmt.Fprintf(os.Stderr, "%s", dbs.output.Bytes())
 		fmt.Fprintf(os.Stderr, "---- mongod processes running right now:\n")
+		//FIXME this is Unix-only
 		cmd := exec.Command("/bin/sh", "-c", "ps auxw | grep mongod")
 		cmd.Stdout = os.Stderr
 		cmd.Stderr = os.Stderr

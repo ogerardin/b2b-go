@@ -13,11 +13,27 @@ import (
 	"github.com/containous/flaeg"
 	"github.com/containous/staert"
 	"github.com/gin-gonic/gin"
+	"github.com/sirupsen/logrus"
 	"go.uber.org/fx"
 	"os"
 	"runtime/pprof"
 	"strings"
 )
+
+func init() {
+	console := log4go.NewConsoleAppender()
+
+	config := &log4go.Config{
+		Loggers: []log4go.LogAppender{
+			{
+				Name:     "b2b-go",
+				Level:    logrus.InfoLevel,
+				Appender: &console,
+			},
+		},
+	}
+	log4go.SetConfig(config)
+}
 
 var log = log4go.GetDefaultLogger()
 

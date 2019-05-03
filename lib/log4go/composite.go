@@ -9,6 +9,57 @@ type CompositeLogger struct {
 	loggers []logrus.FieldLogger
 }
 
+func (cl *CompositeLogger) Log(level logrus.Level, args ...interface{}) {
+	switch level {
+	case logrus.PanicLevel:
+		cl.Panic(args)
+	case logrus.FatalLevel:
+		cl.Fatal(args)
+	case logrus.ErrorLevel:
+		cl.Error(args)
+	case logrus.WarnLevel:
+		cl.Warn(args)
+	case logrus.InfoLevel:
+		cl.Info(args)
+	case logrus.DebugLevel:
+		cl.Debug(args)
+	}
+}
+
+func (cl *CompositeLogger) Logf(level logrus.Level, fmt string, args ...interface{}) {
+	switch level {
+	case logrus.PanicLevel:
+		cl.Panicf(fmt, args)
+	case logrus.FatalLevel:
+		cl.Fatalf(fmt, args)
+	case logrus.ErrorLevel:
+		cl.Errorf(fmt, args)
+	case logrus.WarnLevel:
+		cl.Warnf(fmt, args)
+	case logrus.InfoLevel:
+		cl.Infof(fmt, args)
+	case logrus.DebugLevel:
+		cl.Debugf(fmt, args)
+	}
+}
+
+func (cl *CompositeLogger) Logln(level logrus.Level, args ...interface{}) {
+	switch level {
+	case logrus.PanicLevel:
+		cl.Panicln(args)
+	case logrus.FatalLevel:
+		cl.Fatalln(args)
+	case logrus.ErrorLevel:
+		cl.Errorln(args)
+	case logrus.WarnLevel:
+		cl.Warnln(args)
+	case logrus.InfoLevel:
+		cl.Infoln(args)
+	case logrus.DebugLevel:
+		cl.Debugln(args)
+	}
+}
+
 func (cl *CompositeLogger) String() string {
 	return fmt.Sprintf("CompositeLogger{loggers:%#v}", cl.loggers)
 }

@@ -1,11 +1,13 @@
 package runtime
 
 import (
+	"b2b-go/lib/log4go"
 	slavemongo "b2b-go/lib/slave-mongo"
 	"b2b-go/lib/util"
 	"context"
 	"flag"
 	"github.com/globalsign/mgo"
+	"github.com/sirupsen/logrus"
 	"go.uber.org/fx"
 	"io/ioutil"
 	"log"
@@ -26,7 +28,14 @@ func DBServerProvider(lc fx.Lifecycle, conf *Configuration) *slavemongo.DBServer
 	}
 	os.MkdirAll(conf.MongoDataPath, util.OS_USER_RWX|util.OS_GROUP_RWX|util.OS_OTH_RWX)
 	server.SetPath(conf.MongoDataPath)
+
 	server.SetPort(conf.MongoPort)
+
+	logger := log4go.GetDefaultLogger()
+	server.SetLogAdapter(&log4go.WriterAdapter{
+		Logger: logger,
+		Level:  logrus.InfoLevel,
+	})
 
 	lc.Append(fx.Hook{
 		OnStart: func(c context.Context) error {

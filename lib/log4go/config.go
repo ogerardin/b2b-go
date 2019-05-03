@@ -31,6 +31,10 @@ var (
 	config *Config
 )
 
+func SetConfig(c *Config) {
+	config = c
+}
+
 func getConfig() *Config {
 	if config != nil {
 		return config
