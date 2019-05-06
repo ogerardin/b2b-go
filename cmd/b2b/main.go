@@ -25,15 +25,15 @@ var log log4go.Logger
 func init() {
 	console := log4go.NewConsoleAppender()
 
-	config := &log4go.Config{
-		Loggers: []log4go.LogAppender{
-			{
-				Name:     "",
-				Level:    logrus.InfoLevel,
-				Appender: &console,
-			},
+	config := log4go.DefaultConfig()
+	config.AddLogger(&log4go.Category{
+		Name:       "mongo",
+		Priority:   logrus.InfoLevel,
+		Additivity: false,
+		Appenders: []log4go.Appender{
+			console,
 		},
-	}
+	})
 	log4go.SetConfig(config)
 
 	log = log4go.GetDefaultLogger()

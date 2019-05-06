@@ -3,8 +3,11 @@ package log4go
 import (
 	"github.com/sirupsen/logrus"
 	"io"
+	"math"
 	"strings"
 )
+
+const UndefinedLevel = math.MaxUint32
 
 type Appender struct {
 	name      string
@@ -12,7 +15,7 @@ type Appender struct {
 	Writer    io.Writer
 }
 
-func (a Appender) String() string {
+func (a *Appender) String() string {
 	return a.name
 }
 
@@ -23,59 +26,81 @@ type LogAppender struct {
 }
 
 type Config struct {
-	//Appenders []Appender
-	Loggers []LogAppender
+	RootLogger *Category
+	Loggers    map[string]*Category
 }
 
-var (
-	config *Config
-)
-
-func SetConfig(c *Config) {
-	config = c
-}
-
-func getConfig() *Config {
-	if config != nil {
-		return config
-	}
-	config = loadConfig()
-	return config
-}
-
-func defaultConfig() *Config {
+func DefaultConfig() *Config {
 	return &Config{
-		//Appenders: []Appender{},
-		Loggers: []LogAppender{},
+		RootLogger: &Category{
+			Name:   "ROOT",
+			parent: nil,
+			Appenders: []Appender{
+				NewConsoleAppender(),
+			},
+			Priority: logrus.DebugLevel,
+		},
+		Loggers: nil,
 	}
 }
 
 func loadConfig() *Config {
 	//TODO load from external config!
-	return defaultConfig()
+	return DefaultConfig()
 }
 
-func defaultContext() loggerContext {
-	return loggerContext{
-		appenders: []LogAppender{},
+func (conf *Config) GetLogger(name string) Logger {
+	debugf("GetLogger('%s')", name)
+	logger, found := conf.Loggers[name]
+	if found {
+		debugf("  returning logger from cache")
+		return logger
 	}
+
+	category := &Category{
+		Name:       name,
+		Additivity: true,
+		Priority:   UndefinedLevel, //inherited
+		Appenders:  nil,
+	}
+
+	conf.AddLogger(category)
+
+	return category
 }
 
-func (conf *Config) getContext(name string) loggerContext {
-	result := defaultContext()
-	result.name = name
+func (conf *Config) AddLogger(category *Category) {
+	parent := conf.getParent(category.Name)
+	category.parent = parent
+	category.effectivePriority = UndefinedLevel
+	conf.insertLogger(category)
+	conf.updateEffectivePriorities()
+}
 
-	for _, l := range conf.Loggers {
-		if strings.HasPrefix(name, l.Name) {
-			logAppender := LogAppender{
-				Name:     name,
-				Level:    l.Level,
-				Appender: l.Appender,
-			}
-			result.appenders = append(result.appenders, logAppender)
-			debugf("  logger name matches '%s' -> added destination %s ", l.Name, logAppender)
+func (conf *Config) getParent(name string) *Category {
+	parent := conf.RootLogger
+
+	for name, logger := range conf.Loggers {
+		if strings.HasPrefix(name, logger.Name) && len(logger.Name) > len(parent.Name) {
+			parent = logger
+		}
+	}
+	debugf("  parent for '%s' is %v ", name, parent)
+	return parent
+}
+
+func (conf *Config) insertLogger(category *Category) {
+	for _, logger := range conf.Loggers {
+		if logger.parent == category.parent {
+			logger.parent = category
 		}
 	}
 
-	return result
+	conf.Loggers[category.Name] = category
+}
+
+func (conf *Config) updateEffectivePriorities() {
+	for _, logger := range conf.Loggers {
+		logger.effectivePriority = logger.getEffectivePriority()
+	}
 }

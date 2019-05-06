@@ -9,6 +9,13 @@ type CompositeLogger struct {
 	loggers []logrus.FieldLogger
 }
 
+var (
+	// assert *CompositeLogger implements Logger
+	_ Logger = (*CompositeLogger)(nil)
+	// assert *CompositeLogger implements LevelLogger
+	_ LevelLogger = (*CompositeLogger)(nil)
+)
+
 func (cl *CompositeLogger) Log(level logrus.Level, args ...interface{}) {
 	switch level {
 	case logrus.PanicLevel:
