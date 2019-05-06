@@ -20,6 +20,8 @@ import (
 	"strings"
 )
 
+var log *log4go.CompositeLogger
+
 func init() {
 	console := log4go.NewConsoleAppender()
 
@@ -33,9 +35,9 @@ func init() {
 		},
 	}
 	log4go.SetConfig(config)
-}
 
-var log = log4go.GetDefaultLogger()
+	log = log4go.GetDefaultLogger()
+}
 
 func main() {
 
@@ -126,6 +128,8 @@ func providers(constructors ...interface{}) fx.Option {
 func startApp(conf *runtime.Configuration) error {
 
 	app := fx.New(
+		fx.Logger(log),
+
 		fx.Provide(func() *runtime.Configuration { return conf }),
 		fx.Provide(runtime.DBServerProvider),
 		fx.Provide(runtime.SessionProvider),

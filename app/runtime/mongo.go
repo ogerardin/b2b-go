@@ -8,6 +8,7 @@ import (
 	"context"
 	"flag"
 	"github.com/globalsign/mgo"
+	"github.com/sirupsen/logrus"
 	"go.uber.org/fx"
 	"io/ioutil"
 	"log"
@@ -32,7 +33,8 @@ func DBServerProvider(lc fx.Lifecycle, conf *Configuration) *slavemongo.DBServer
 	server.SetPort(conf.MongoPort)
 
 	server.SetLogAdapter(&adapters.MongoWriterAdapter{
-		Logger: log4go.GetDefaultLogger(),
+		Logger:       log4go.GetDefaultLogger(),
+		DefaultLevel: logrus.InfoLevel,
 	})
 
 	lc.Append(fx.Hook{
