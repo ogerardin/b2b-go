@@ -12,51 +12,51 @@ type CompositeLogger struct {
 func (cl *CompositeLogger) Log(level logrus.Level, args ...interface{}) {
 	switch level {
 	case logrus.PanicLevel:
-		cl.Panic(args)
+		cl.Panic(args...)
 	case logrus.FatalLevel:
-		cl.Fatal(args)
+		cl.Fatal(args...)
 	case logrus.ErrorLevel:
-		cl.Error(args)
+		cl.Error(args...)
 	case logrus.WarnLevel:
-		cl.Warn(args)
+		cl.Warn(args...)
 	case logrus.InfoLevel:
-		cl.Info(args)
+		cl.Info(args...)
 	case logrus.DebugLevel:
-		cl.Debug(args)
+		cl.Debug(args...)
 	}
 }
 
 func (cl *CompositeLogger) Logf(level logrus.Level, fmt string, args ...interface{}) {
 	switch level {
 	case logrus.PanicLevel:
-		cl.Panicf(fmt, args)
+		cl.Panicf(fmt, args...)
 	case logrus.FatalLevel:
-		cl.Fatalf(fmt, args)
+		cl.Fatalf(fmt, args...)
 	case logrus.ErrorLevel:
-		cl.Errorf(fmt, args)
+		cl.Errorf(fmt, args...)
 	case logrus.WarnLevel:
-		cl.Warnf(fmt, args)
+		cl.Warnf(fmt, args...)
 	case logrus.InfoLevel:
-		cl.Infof(fmt, args)
+		cl.Infof(fmt, args...)
 	case logrus.DebugLevel:
-		cl.Debugf(fmt, args)
+		cl.Debugf(fmt, args...)
 	}
 }
 
 func (cl *CompositeLogger) Logln(level logrus.Level, args ...interface{}) {
 	switch level {
 	case logrus.PanicLevel:
-		cl.Panicln(args)
+		cl.Panicln(args...)
 	case logrus.FatalLevel:
-		cl.Fatalln(args)
+		cl.Fatalln(args...)
 	case logrus.ErrorLevel:
-		cl.Errorln(args)
+		cl.Errorln(args...)
 	case logrus.WarnLevel:
-		cl.Warnln(args)
+		cl.Warnln(args...)
 	case logrus.InfoLevel:
-		cl.Infoln(args)
+		cl.Infoln(args...)
 	case logrus.DebugLevel:
-		cl.Debugln(args)
+		cl.Debugln(args...)
 	}
 }
 
@@ -70,7 +70,7 @@ func NewCompositeLogger(loggers ...logrus.FieldLogger) *CompositeLogger {
 	}
 }
 
-func (cl *CompositeLogger) WithField(key string, value interface{}) *CompositeLogger {
+func (cl *CompositeLogger) WithField(key string, value interface{}) Logger {
 	entries := make([]logrus.FieldLogger, 0)
 	for _, l := range cl.loggers {
 		entry := l.WithField(key, value)
@@ -80,7 +80,7 @@ func (cl *CompositeLogger) WithField(key string, value interface{}) *CompositeLo
 	return NewCompositeLogger(entries...)
 }
 
-func (cl *CompositeLogger) WithFields(fields logrus.Fields) *CompositeLogger {
+func (cl *CompositeLogger) WithFields(fields logrus.Fields) Logger {
 	entries := make([]logrus.FieldLogger, 0)
 	for _, l := range cl.loggers {
 		entry := l.WithFields(fields)
@@ -90,7 +90,7 @@ func (cl *CompositeLogger) WithFields(fields logrus.Fields) *CompositeLogger {
 	return NewCompositeLogger(entries...)
 }
 
-func (cl *CompositeLogger) WithError(err error) *CompositeLogger {
+func (cl *CompositeLogger) WithError(err error) Logger {
 	entries := make([]logrus.FieldLogger, 0)
 	for _, l := range cl.loggers {
 		entry := l.WithError(err)
@@ -102,91 +102,91 @@ func (cl *CompositeLogger) WithError(err error) *CompositeLogger {
 
 func (cl *CompositeLogger) Debugf(format string, args ...interface{}) {
 	for _, l := range cl.loggers {
-		l.Debugf(format, args)
+		l.Debugf(format, args...)
 	}
 }
 
 func (cl *CompositeLogger) Infof(format string, args ...interface{}) {
 	for _, l := range cl.loggers {
-		l.Infof(format, args)
+		l.Infof(format, args...)
 	}
 }
 
 func (cl *CompositeLogger) Warnf(format string, args ...interface{}) {
 	for _, l := range cl.loggers {
-		l.Warnf(format, args)
+		l.Warnf(format, args...)
 	}
 }
 
 func (cl *CompositeLogger) Warningf(format string, args ...interface{}) {
 	for _, l := range cl.loggers {
-		l.Warningf(format, args)
+		l.Warningf(format, args...)
 	}
 }
 
 func (cl *CompositeLogger) Errorf(format string, args ...interface{}) {
 	for _, l := range cl.loggers {
-		l.Errorf(format, args)
+		l.Errorf(format, args...)
 	}
 }
 
 func (cl *CompositeLogger) Debug(args ...interface{}) {
 	for _, l := range cl.loggers {
-		l.Debug(args)
+		l.Debug(args...)
 	}
 }
 
 func (cl *CompositeLogger) Info(args ...interface{}) {
 	for _, l := range cl.loggers {
-		l.Info(args)
+		l.Info(args...)
 	}
 }
 
 func (cl *CompositeLogger) Warn(args ...interface{}) {
 	for _, l := range cl.loggers {
-		l.Warn(args)
+		l.Warn(args...)
 	}
 }
 
 func (cl *CompositeLogger) Warning(args ...interface{}) {
 	for _, l := range cl.loggers {
-		l.Warning(args)
+		l.Warning(args...)
 	}
 }
 
 func (cl *CompositeLogger) Error(args ...interface{}) {
 	for _, l := range cl.loggers {
-		l.Error(args)
+		l.Error(args...)
 	}
 }
 
 func (cl *CompositeLogger) Debugln(args ...interface{}) {
 	for _, l := range cl.loggers {
-		l.Debugln(args)
+		l.Debugln(args...)
 	}
 }
 
 func (cl *CompositeLogger) Infoln(args ...interface{}) {
 	for _, l := range cl.loggers {
-		l.Infoln(args)
+		l.Infoln(args...)
 	}
 }
 
 func (cl *CompositeLogger) Warnln(args ...interface{}) {
 	for _, l := range cl.loggers {
-		l.Warnln(args)
+		l.Warnln(args...)
 	}
 }
 
 func (cl *CompositeLogger) Warningln(args ...interface{}) {
 	for _, l := range cl.loggers {
-		l.Warningln(args)
+		l.Warningln(args...)
 	}
 }
 
 func (cl *CompositeLogger) Errorln(args ...interface{}) {
 	for _, l := range cl.loggers {
-		l.Errorln(args)
+		l.Errorln(args...)
 	}
 }
 
@@ -196,54 +196,54 @@ func (cl *CompositeLogger) Append(logger logrus.FieldLogger) {
 
 func (cl CompositeLogger) Print(args ...interface{}) {
 	for _, l := range cl.loggers {
-		l.Print(args)
+		l.Print(args...)
 	}
 }
 
 func (cl CompositeLogger) Printf(fmt string, args ...interface{}) {
 	for _, l := range cl.loggers {
-		l.Printf(fmt, args)
+		l.Printf(fmt, args...)
 	}
 }
 
 func (cl CompositeLogger) Println(args ...interface{}) {
 	for _, l := range cl.loggers {
-		l.Println(args)
+		l.Println(args...)
 	}
 }
 
 func (cl CompositeLogger) Fatal(args ...interface{}) {
 	for _, l := range cl.loggers {
-		l.Fatal(args)
+		l.Fatal(args...)
 	}
 }
 
 func (cl CompositeLogger) Fatalf(fmt string, args ...interface{}) {
 	for _, l := range cl.loggers {
-		l.Fatalf(fmt, args)
+		l.Fatalf(fmt, args...)
 	}
 }
 
 func (cl CompositeLogger) Fatalln(args ...interface{}) {
 	for _, l := range cl.loggers {
-		l.Fatalln(args)
+		l.Fatalln(args...)
 	}
 }
 
 func (cl CompositeLogger) Panic(args ...interface{}) {
 	for _, l := range cl.loggers {
-		l.Panic(args)
+		l.Panic(args...)
 	}
 }
 
 func (cl CompositeLogger) Panicf(fmt string, args ...interface{}) {
 	for _, l := range cl.loggers {
-		l.Panicf(fmt, args)
+		l.Panicf(fmt, args...)
 	}
 }
 
 func (cl CompositeLogger) Panicln(args ...interface{}) {
 	for _, l := range cl.loggers {
-		l.Panicln(args)
+		l.Panicln(args...)
 	}
 }

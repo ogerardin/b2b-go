@@ -43,12 +43,12 @@ func (context *loggerContext) newLogger() *CompositeLogger {
 
 func debugf(fmt string, args ...interface{}) {
 	if debug {
-		log.Printf(fmt, args...)
+		log.Printf("[log4go] "+fmt, args...)
 	}
 
 }
 
-func GetLogger(name string) *CompositeLogger {
+func GetLogger(name string) Logger {
 	debugf("GetLogger(%s)", name)
 	logger, found := loggers[name]
 	if found {
@@ -65,7 +65,7 @@ func GetLogger(name string) *CompositeLogger {
 	return logger
 }
 
-func GetDefaultLogger() *CompositeLogger {
+func GetDefaultLogger() Logger {
 	debugf("GetDefaultLogger")
 	pc, _, _, ok := runtime.Caller(1)
 	if !ok {

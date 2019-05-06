@@ -20,7 +20,7 @@ import (
 	"strings"
 )
 
-var log *log4go.CompositeLogger
+var log log4go.Logger
 
 func init() {
 	console := log4go.NewConsoleAppender()
@@ -28,7 +28,7 @@ func init() {
 	config := &log4go.Config{
 		Loggers: []log4go.LogAppender{
 			{
-				Name:     "b2b-go",
+				Name:     "",
 				Level:    logrus.InfoLevel,
 				Appender: &console,
 			},
@@ -75,7 +75,7 @@ func main() {
 func loadExternalConfig(conf *runtime.Configuration) error {
 	profiles := strings.Split(conf.Profiles, ",")
 	profiles = util.Map(profiles, strings.TrimSpace)
-	fmt.Printf("Active profiles: %v\n", profiles)
+	log.Infof("Active profiles: %v\n", profiles)
 
 	s := staert.NewStaert(conf.Command)
 	s.AddSource(staert.NewTomlSource("b2b", []string{"./conf", "."}))
@@ -126,6 +126,8 @@ func providers(constructors ...interface{}) fx.Option {
 }
 
 func startApp(conf *runtime.Configuration) error {
+
+	log := log4go.GetLogger("fx")
 
 	app := fx.New(
 		fx.Logger(log),

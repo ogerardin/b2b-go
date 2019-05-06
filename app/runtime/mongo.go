@@ -11,14 +11,17 @@ import (
 	"github.com/sirupsen/logrus"
 	"go.uber.org/fx"
 	"io/ioutil"
-	"log"
 	"os"
 )
+
+var log log4go.Logger
 
 func init() {
 	if flag.Lookup("test.v") != nil {
 		log.Println("Running under 'go test'")
 	}
+
+	log = log4go.GetDefaultLogger()
 }
 
 func DBServerProvider(lc fx.Lifecycle, conf *Configuration) *slavemongo.DBServer {
@@ -33,18 +36,18 @@ func DBServerProvider(lc fx.Lifecycle, conf *Configuration) *slavemongo.DBServer
 	server.SetPort(conf.MongoPort)
 
 	server.SetLogAdapter(&adapters.MongoWriterAdapter{
-		Logger:       log4go.GetDefaultLogger(),
-		DefaultLevel: logrus.InfoLevel,
+		Logger:       log4go.GetLogger("mongo"),
+		DefaultLevel: logrus.DebugLevel,
 	})
 
 	lc.Append(fx.Hook{
 		OnStart: func(c context.Context) error {
-			log.Print("Starting slave Mongo server")
+			log.Info("Starting slave Mongo server")
 			server.Start()
 			return nil
 		},
 		OnStop: func(c context.Context) error {
-			log.Print("Stopping slave Mongo server")
+			log.Info("Stopping slave Mongo server")
 			//if test {
 			//	server.Wipe()
 			//}
