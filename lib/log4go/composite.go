@@ -1,7 +1,6 @@
 package log4go
 
 import (
-	"fmt"
 	"github.com/sirupsen/logrus"
 )
 
@@ -15,6 +14,12 @@ var (
 	// assert *CompositeLogger implements LevelLogger
 	_ LevelLogger = (*CompositeLogger)(nil)
 )
+
+func NewCompositeLogger(loggers ...logrus.FieldLogger) *CompositeLogger {
+	return &CompositeLogger{
+		loggers: loggers,
+	}
+}
 
 func (cl *CompositeLogger) Log(level logrus.Level, args ...interface{}) {
 	switch level {
@@ -67,16 +72,13 @@ func (cl *CompositeLogger) Logln(level logrus.Level, args ...interface{}) {
 	}
 }
 
-func (cl *CompositeLogger) String() string {
+/*func (cl *CompositeLogger) String() string {
+	if cl == nil {
+		return "nil"
+	}
 	return fmt.Sprintf("CompositeLogger{loggers:%#v}", cl.loggers)
 }
-
-func NewCompositeLogger(loggers ...logrus.FieldLogger) *CompositeLogger {
-	return &CompositeLogger{
-		loggers: loggers,
-	}
-}
-
+*/
 func (cl *CompositeLogger) WithField(key string, value interface{}) Logger {
 	entries := make([]logrus.FieldLogger, 0)
 	for _, l := range cl.loggers {

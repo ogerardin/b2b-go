@@ -2,20 +2,9 @@ package util
 
 import (
 	"fmt"
-	"github.com/sirupsen/logrus"
+	"log"
 	"reflect"
 )
-
-var log *logrus.Logger
-
-func init() {
-	log = logrus.New()
-	log.SetReportCaller(true)
-	log.SetFormatter(&logrus.TextFormatter{
-		ForceColors: true,
-	})
-	log.SetLevel(logrus.TraceLevel)
-}
 
 func Introspect(v interface{}) {
 	rv := reflect.ValueOf(v)
@@ -34,11 +23,11 @@ func print(context string, rv reflect.Value) {
 
 func ConcreteValue(v interface{}) reflect.Value {
 	rv := reflect.ValueOf(v)
-	log.Trace(rv.Type(), rv.Kind(), rv)
+	log.Print(rv.Type(), rv.Kind(), rv)
 
 	for rv.Kind() == reflect.Ptr || rv.Kind() == reflect.Interface {
 		rv = rv.Elem()
-		log.Trace(rv.Type(), rv.Kind(), rv)
+		log.Print(rv.Type(), rv.Kind(), rv)
 	}
 	return rv
 }

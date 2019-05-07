@@ -9,7 +9,7 @@ func Test(t *testing.T) {
 
 	testConfig()
 
-	logger := GetLogger("a/b")
+	logger := GetLogger("a.b.c")
 
 	logger.Debugln("bla")
 
@@ -23,25 +23,23 @@ func testConfig() {
 	console := NewConsoleAppender()
 	file := NewFileAppender("test.log")
 
-	config = &Config{
-		Loggers: []LogAppender{
-			{
-				Name:     "",
-				Level:    logrus.InfoLevel,
-				Appender: &console,
-			},
-			{
-				Name:     "a",
-				Level:    logrus.InfoLevel,
-				Appender: &file,
-			},
-			{
-				Name:     "a/b",
-				Level:    logrus.DebugLevel,
-				Appender: &console,
-			},
-		},
-	}
+	config = DefaultConfig()
+	config.getRootLogger().SetPriority(logrus.InfoLevel)
+
+	config.AddLogger(&Category{
+		Name:       "a",
+		Priority:   logrus.InfoLevel,
+		Appenders:  []*Appender{file},
+		Additivity: false,
+	},
+	)
+	config.AddLogger(&Category{
+		Name:       "a.b",
+		Priority:   logrus.DebugLevel,
+		Appenders:  []*Appender{console},
+		Additivity: true,
+	},
+	)
 }
 
 func TestPackage(t *testing.T) {

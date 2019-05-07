@@ -28,9 +28,9 @@ func init() {
 	config := log4go.DefaultConfig()
 	config.AddLogger(&log4go.Category{
 		Name:       "mongo",
-		Priority:   logrus.InfoLevel,
+		Priority:   logrus.DebugLevel,
 		Additivity: false,
-		Appenders: []log4go.Appender{
+		Appenders: []*log4go.Appender{
 			console,
 		},
 	})

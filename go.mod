@@ -10,21 +10,24 @@ require (
 	github.com/globalsign/mgo v0.0.0-20181015135952-eeefdecb41b8
 	github.com/golang/protobuf v1.3.0 // indirect
 	github.com/google/uuid v1.1.0
-	github.com/hashicorp/go-version v1.1.0 // indirect
 	github.com/json-iterator/go v1.1.5 // indirect
 	github.com/kr/pretty v0.1.0 // indirect
 	github.com/magefile/mage v1.8.0
+	github.com/mattn/go-colorable v0.1.1 // indirect
 	github.com/mattn/go-isatty v0.0.6 // indirect
 	github.com/mattn/psutil v0.0.0-20170126005127-e6c88f1e9be6
-	github.com/mitchellh/gox v1.0.1 // indirect
+	github.com/mgutz/ansi v0.0.0-20170206155736-9520e82c474b // indirect
 	github.com/mitchellh/mapstructure v1.1.2
 	github.com/modern-go/concurrent v0.0.0-20180306012644-bacd9c7ef1dd // indirect
 	github.com/modern-go/reflect2 v1.0.1 // indirect
 	github.com/ogier/pflag v0.0.1 // indirect
+	github.com/onsi/ginkgo v1.8.0 // indirect
+	github.com/onsi/gomega v1.5.0 // indirect
 	github.com/pkg/errors v0.8.1
 	github.com/sirupsen/logrus v1.4.0
 	github.com/stretchr/testify v1.3.0
 	github.com/ugorji/go/codec v0.0.0-20190204201341-e444a5086c43 // indirect
+	github.com/x-cray/logrus-prefixed-formatter v0.5.2
 	go.uber.org/atomic v1.3.2 // indirect
 	go.uber.org/dig v1.7.0 // indirect
 	go.uber.org/fx v1.9.0

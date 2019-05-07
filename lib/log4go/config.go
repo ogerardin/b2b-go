@@ -1,6 +1,7 @@
 package log4go
 
 import (
+	"github.com/pkg/errors"
 	"github.com/sirupsen/logrus"
 	"io"
 	"math"
@@ -33,14 +34,14 @@ type Config struct {
 func DefaultConfig() *Config {
 	return &Config{
 		RootLogger: &Category{
-			Name:   "ROOT",
+			Name:   "",
 			parent: nil,
-			Appenders: []Appender{
+			Appenders: []*Appender{
 				NewConsoleAppender(),
 			},
 			Priority: logrus.DebugLevel,
 		},
-		Loggers: nil,
+		Loggers: make(map[string]*Category),
 	}
 }
 
@@ -53,7 +54,10 @@ func (conf *Config) GetLogger(name string) Logger {
 	debugf("GetLogger('%s')", name)
 	logger, found := conf.Loggers[name]
 	if found {
-		debugf("  returning logger from cache")
+		debugf("  returning existing logger")
+		if logger.CompositeLogger == nil {
+			logger.prepare()
+		}
 		return logger
 	}
 
@@ -66,41 +70,46 @@ func (conf *Config) GetLogger(name string) Logger {
 
 	conf.AddLogger(category)
 
+	category.prepare()
+
 	return category
 }
 
 func (conf *Config) AddLogger(category *Category) {
+	debugf("Adding logger: %+v", category)
+
+	if len(category.Name) == 0 {
+		panic(errors.New("name cannot be empty"))
+	}
+
 	parent := conf.getParent(category.Name)
+	debugf("  parent for '%s' is '%s' ", category.Name, parent.Name)
 	category.parent = parent
-	category.effectivePriority = UndefinedLevel
+
 	conf.insertLogger(category)
-	conf.updateEffectivePriorities()
 }
 
 func (conf *Config) getParent(name string) *Category {
 	parent := conf.RootLogger
-
-	for name, logger := range conf.Loggers {
+	for _, logger := range conf.Loggers {
 		if strings.HasPrefix(name, logger.Name) && len(logger.Name) > len(parent.Name) {
 			parent = logger
 		}
 	}
-	debugf("  parent for '%s' is %v ", name, parent)
 	return parent
 }
 
 func (conf *Config) insertLogger(category *Category) {
+	// reassign the parent
 	for _, logger := range conf.Loggers {
 		if logger.parent == category.parent {
 			logger.parent = category
 		}
 	}
-
+	// store in cache
 	conf.Loggers[category.Name] = category
 }
 
-func (conf *Config) updateEffectivePriorities() {
-	for _, logger := range conf.Loggers {
-		logger.effectivePriority = logger.getEffectivePriority()
-	}
+func (conf *Config) getRootLogger() *Category {
+	return conf.RootLogger
 }

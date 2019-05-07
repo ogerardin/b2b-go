@@ -4,25 +4,31 @@ import (
 	"b2b-go/lib/util"
 	"github.com/pkg/errors"
 	"github.com/sirupsen/logrus"
+	prefixed "github.com/x-cray/logrus-prefixed-formatter"
 	"os"
 )
 
-func NewConsoleAppender() Appender {
-	return Appender{
+func NewConsoleAppender() *Appender {
+	return &Appender{
 		name: "Console",
-		Formatter: &logrus.TextFormatter{
-			ForceColors: true,
+		//Formatter: &logrus.TextFormatter{
+		//	ForceColors: true,
+		//},
+		Formatter: &prefixed.TextFormatter{
+			ForceColors:     true,
+			ForceFormatting: true,
+			FullTimestamp:   true,
 		},
 		Writer: os.Stdout,
 	}
 }
 
-func NewFileAppender(filename string) Appender {
+func NewFileAppender(filename string) *Appender {
 	file, err := os.OpenFile(filename, os.O_APPEND|os.O_CREATE|os.O_WRONLY, util.OS_ALL_RW)
 	if err != nil {
 		panic(errors.Wrapf(err, "Failed to open file %s for writing", filename))
 	}
-	return Appender{
+	return &Appender{
 		name:      "File: " + filename,
 		Formatter: &logrus.TextFormatter{},
 		Writer:    file,
