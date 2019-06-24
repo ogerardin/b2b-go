@@ -10,9 +10,13 @@ type BackupSource interface {
 }
 
 type BackupSourceBase struct {
-	Id      string `mapstructure:"_id" json:"id"`
+	Id      string `mapstructure:"_id" json:"-" jsonapi:"primary,sources"`
 	Enabled bool   `json:"enabled"`
 	Name    string `json:"name"`
+}
+
+func (bsb BackupSourceBase) GetID() string {
+	return bsb.Id
 }
 
 func (bsb BackupSourceBase) backupSource() {}

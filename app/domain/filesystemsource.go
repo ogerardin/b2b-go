@@ -8,7 +8,7 @@ import (
 
 type FilesystemSource struct {
 	BackupSourceBase `mapstructure:",squash"`
-	Paths            []string
+	Paths            []string `json:"paths"`
 }
 
 var _ BackupSource = &FilesystemSource{}

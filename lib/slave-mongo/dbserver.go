@@ -4,6 +4,7 @@ import (
 	"bytes"
 	"fmt"
 	"github.com/globalsign/mgo"
+	"github.com/pkg/errors"
 	"gopkg.in/tomb.v2"
 	"io"
 	"net"
@@ -165,7 +166,7 @@ func (dbs *DBServer) Session() *mgo.Session {
 		var err error
 		dbs.session, err = mgo.Dial(dbs.host + "/test")
 		if err != nil {
-			panic(err)
+			panic(errors.Wrapf(err, "Failed to connect to MongoDB at %s:%d", dbs.host, dbs.port))
 		}
 	}
 	return dbs.session.Copy()

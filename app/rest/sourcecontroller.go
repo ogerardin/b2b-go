@@ -3,11 +3,16 @@ package rest
 import (
 	"b2b-go/app/domain"
 	"b2b-go/app/repo"
+	"b2b-go/lib/log4go"
 	"b2b-go/lib/util"
 	"github.com/gin-gonic/gin"
+	"github.com/manyminds/api2go/jsonapi"
+	"github.com/pkg/errors"
 	"net/http"
 	"reflect"
 )
+
+var logger = log4go.GetDefaultLogger()
 
 func RegisterSourceRoutes(r repo.SourceRepo, g *gin.Engine) {
 
@@ -16,10 +21,12 @@ func RegisterSourceRoutes(r repo.SourceRepo, g *gin.Engine) {
 	g.GET("/api/sources", func(c *gin.Context) {
 		sources, err := r.GetAll()
 		if err != nil {
-			_ = c.AbortWithError(http.StatusInternalServerError, err)
+			_ = c.AbortWithError(http.StatusInternalServerError,
+				errors.Wrap(err, "Failed to retrieve sources from repository"))
 			return
 		}
-		c.JSON(http.StatusOK, sources)
+
+		jsonOK(c, sources)
 	})
 
 	g.GET("/api/sources/:id", func(c *gin.Context) {
@@ -29,7 +36,7 @@ func RegisterSourceRoutes(r repo.SourceRepo, g *gin.Engine) {
 			_ = c.AbortWithError(http.StatusInternalServerError, err)
 			return
 		}
-		c.JSON(http.StatusOK, source)
+		jsonOK(c, source)
 	})
 
 	g.DELETE("/api/sources/:id", func(c *gin.Context) {
@@ -75,4 +82,13 @@ func RegisterSourceRoutes(r repo.SourceRepo, g *gin.Engine) {
 		c.JSON(http.StatusOK, source)
 	})
 
+}
+
+func jsonOK(c *gin.Context, data interface{}) {
+	res, err := jsonapi.MarshalToStruct(data, nil)
+	if err != nil {
+		_ = c.AbortWithError(http.StatusInternalServerError, errors.Wrap(err, "Failed to marshal response"))
+		return
+	}
+	c.JSON(http.StatusOK, res)
 }

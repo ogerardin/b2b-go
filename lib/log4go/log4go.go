@@ -1,6 +1,7 @@
 package log4go
 
 import (
+	"bufio"
 	"github.com/pkg/errors"
 	"log"
 	"os"
@@ -38,6 +39,7 @@ func debugf(fmt string, args ...interface{}) {
 
 }
 
+// returns a Logger with a name based on the current method's package
 func GetDefaultLogger() Logger {
 	debugf("GetDefaultLogger")
 	pc, _, _, ok := runtime.Caller(1)
@@ -54,4 +56,48 @@ func GetDefaultLogger() Logger {
 
 func GetLogger(name string) Logger {
 	return getConfig().GetLogger(name)
+}
+
+func CaptureStdOut() {
+	stdout := os.Stdout
+	r, w, err := os.Pipe()
+	if err != nil {
+		panic(errors.Wrap(err, "Failed to create pipe"))
+	}
+	os.Stdout = w
+
+	go func() {
+		reader := bufio.NewReader(r)
+		writer := bufio.NewWriter(stdout)
+		for {
+			line, err := reader.ReadString('\n')
+			if err != nil {
+				break
+			}
+			writer.WriteString("[stdout] " + line + "\n")
+		}
+
+	}()
+}
+
+func CaptureStdErr() {
+	stderr := os.Stderr
+	r, w, err := os.Pipe()
+	if err != nil {
+		panic(errors.Wrap(err, "Failed to create pipe"))
+	}
+	os.Stderr = w
+
+	go func() {
+		reader := bufio.NewReader(r)
+		writer := bufio.NewWriter(stderr)
+		for {
+			line, err := reader.ReadString('\n')
+			if err != nil {
+				break
+			}
+			writer.WriteString("[stderr] " + line + "\n")
+		}
+
+	}()
 }

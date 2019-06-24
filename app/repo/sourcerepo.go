@@ -29,9 +29,15 @@ func NewSourceRepo(s *mgo.Session) SourceRepo {
 	repo.SaveNew(&domain.FilesystemSource{
 		BackupSourceBase: domain.BackupSourceBase{
 			Enabled: true,
-			Name:    "my source",
+			Name:    "my filsystem source",
 		},
 		Paths: []string{"/tmp"},
+	})
+	repo.SaveNew(&domain.PeerSource{
+		BackupSourceBase: domain.BackupSourceBase{
+			Enabled: true,
+			Name:    "my peer source",
+		},
 	})
 
 	return repo

@@ -36,6 +36,8 @@ func init() {
 	})
 	log4go.SetConfig(config)
 
+	log4go.CaptureStdErr()
+
 	log = log4go.GetDefaultLogger()
 }
 
