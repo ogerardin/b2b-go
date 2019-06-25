@@ -2,7 +2,7 @@ package runtime
 
 import (
 	"b2b-go/lib/log4go"
-	"b2b-go/lib/log4go/adapters"
+	"b2b-go/lib/log4go/logadapters"
 	slavemongo "b2b-go/lib/slave-mongo"
 	"b2b-go/lib/util"
 	"context"
@@ -35,7 +35,7 @@ func DBServerProvider(lc fx.Lifecycle, conf *Configuration) *slavemongo.DBServer
 
 	server.SetPort(conf.MongoPort)
 
-	server.SetLogAdapter(&adapters.MongoWriterAdapter{
+	server.SetLogAdapter(&logadapters.MongoWriterAdapter{
 		Logger:       log4go.GetLogger("mongo"),
 		DefaultLevel: logrus.DebugLevel,
 	})

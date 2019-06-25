@@ -5,6 +5,7 @@ import (
 	"b2b-go/app/rest"
 	"b2b-go/app/runtime"
 	"b2b-go/lib/log4go"
+	"b2b-go/lib/log4go/logadapters"
 	"b2b-go/lib/util"
 	"b2b-go/meta"
 	"context"
@@ -23,8 +24,23 @@ import (
 var log log4go.Logger
 
 func init() {
-	console := log4go.NewConsoleAppender()
 
+	configureLog4go()
+
+	log = log4go.GetDefaultLogger()
+
+	// pipe os.Stderr output to logger named "stderr" with ERROR level
+	logadapters.Feed(
+		logadapters.CaptureStdErr(),
+		log4go.GetLogger("stderr"),
+		logrus.ErrorLevel,
+	)
+}
+
+func configureLog4go() {
+	//TODO move this to a configuration file
+	console := log4go.NewConsoleAppender()
+	stderrFile := log4go.NewFileAppender("stderr.log")
 	config := log4go.DefaultConfig()
 	config.AddLogger(&log4go.Category{
 		Name:       "mongo",
@@ -34,11 +50,16 @@ func init() {
 			console,
 		},
 	})
+	config.AddLogger(&log4go.Category{
+		Name:       "stderr",
+		Priority:   logrus.ErrorLevel,
+		Additivity: false,
+		Appenders: []*log4go.Appender{
+			console,
+			stderrFile,
+		},
+	})
 	log4go.SetConfig(config)
-
-	log4go.CaptureStdErr()
-
-	log = log4go.GetDefaultLogger()
 }
 
 func main() {

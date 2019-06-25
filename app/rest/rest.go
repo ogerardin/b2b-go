@@ -2,7 +2,7 @@ package rest
 
 import (
 	"b2b-go/lib/log4go"
-	"b2b-go/lib/log4go/adapters"
+	"b2b-go/lib/log4go/logadapters"
 	"github.com/gin-gonic/gin"
 	"github.com/sirupsen/logrus"
 )
@@ -10,11 +10,11 @@ import (
 func GinProvider() *gin.Engine {
 	log := log4go.GetDefaultLogger()
 
-	gin.DefaultWriter = &adapters.WriterAdapter{
+	gin.DefaultWriter = &logadapters.WriterAdapter{
 		Level:  logrus.InfoLevel,
 		Logger: log,
 	}
-	gin.DefaultErrorWriter = &adapters.WriterAdapter{
+	gin.DefaultErrorWriter = &logadapters.WriterAdapter{
 		Level:  logrus.ErrorLevel,
 		Logger: log,
 	}

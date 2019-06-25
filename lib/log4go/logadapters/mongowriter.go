@@ -1,4 +1,4 @@
-package adapters
+package logadapters
 
 import (
 	"b2b-go/lib/log4go"

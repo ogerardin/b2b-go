@@ -54,7 +54,7 @@ func (conf *Config) GetLogger(name string) Logger {
 	debugf("GetLogger('%s')", name)
 	logger, found := conf.Loggers[name]
 	if found {
-		debugf("  returning existing logger")
+		debugf("  logger exists")
 		if logger.CompositeLogger == nil {
 			logger.prepare()
 		}
