@@ -4,6 +4,7 @@ import (
 	"github.com/sirupsen/logrus"
 )
 
+// A Category is a node in a hierarchical Logger tree
 type Category struct {
 	Name       string
 	Priority   logrus.Level
@@ -49,7 +50,7 @@ func (c *Category) prepare() {
 	appenders := c.getEffectiveAppenders()
 	debugf("  effective appenders for %s: %s", c.Name, appenders)
 
-	//for each appendre, we create a matching FieldLogger
+	//for each appender, we create a matching FieldLogger
 	loggers := make([]logrus.FieldLogger, 0)
 	for _, appender := range appenders {
 		logger := &logrus.Logger{

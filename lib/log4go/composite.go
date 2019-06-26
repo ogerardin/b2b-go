@@ -4,6 +4,8 @@ import (
 	"github.com/sirupsen/logrus"
 )
 
+// A type of logger that forwards log messages to a set of subloggers of type log4rus.FieldLogger.
+// Implements both log4go.Logger and log4go.LevelLogger
 type CompositeLogger struct {
 	loggers []logrus.FieldLogger
 }
@@ -83,7 +85,7 @@ func (cl *CompositeLogger) WithField(key string, value interface{}) Logger {
 	entries := make([]logrus.FieldLogger, 0)
 	for _, l := range cl.loggers {
 		entry := l.WithField(key, value)
-		entries = append(entries, logrus.FieldLogger(entry))
+		entries = append(entries, entry)
 	}
 
 	return NewCompositeLogger(entries...)
@@ -93,7 +95,7 @@ func (cl *CompositeLogger) WithFields(fields logrus.Fields) Logger {
 	entries := make([]logrus.FieldLogger, 0)
 	for _, l := range cl.loggers {
 		entry := l.WithFields(fields)
-		entries = append(entries, logrus.FieldLogger(entry))
+		entries = append(entries, entry)
 	}
 
 	return NewCompositeLogger(entries...)
@@ -103,7 +105,7 @@ func (cl *CompositeLogger) WithError(err error) Logger {
 	entries := make([]logrus.FieldLogger, 0)
 	for _, l := range cl.loggers {
 		entry := l.WithError(err)
-		entries = append(entries, logrus.FieldLogger(entry))
+		entries = append(entries, entry)
 	}
 
 	return NewCompositeLogger(entries...)

@@ -20,17 +20,13 @@ func (a *Appender) String() string {
 	return a.name
 }
 
-type LogAppender struct {
-	Name     string
-	Appender *Appender
-	Level    logrus.Level
-}
-
 type Config struct {
 	RootLogger *Category
 	Loggers    map[string]*Category
 }
 
+// Returns a default configuration for log4go, with just a root logger logging to a console appender
+// at DEBUG level.
 func DefaultConfig() *Config {
 	return &Config{
 		RootLogger: &Category{
