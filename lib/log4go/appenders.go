@@ -8,6 +8,19 @@ import (
 	"os"
 )
 
+// TODO This is the future definition of Appender. The current Appender (struct) is not generic enough
+type NewAppender interface {
+	Append(level logrus.Level, fields logrus.Fields, message string)
+}
+
+type LoggerAppender struct {
+	Logger
+}
+
+func (l *LoggerAppender) Append(level logrus.Level, fields logrus.Fields, message string) {
+	l.Logger.WithFields(fields).Logln(level, message)
+}
+
 func NewConsoleAppender() *Appender {
 	return &Appender{
 		name: "Console",

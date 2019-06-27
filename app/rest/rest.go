@@ -8,7 +8,7 @@ import (
 )
 
 func GinProvider() *gin.Engine {
-	log := log4go.GetDefaultLogger()
+	log := log4go.GetPackageLogger()
 
 	gin.DefaultWriter = &logadapters.WriterAdapter{
 		Level:  logrus.InfoLevel,

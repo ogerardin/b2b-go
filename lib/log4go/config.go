@@ -10,6 +10,7 @@ import (
 
 const UndefinedLevel = math.MaxUint32
 
+// TODO this struct should go away in favor of an interface (NewApender)
 type Appender struct {
 	name      string
 	Formatter logrus.Formatter
@@ -64,15 +65,15 @@ func (conf *Config) GetLogger(name string) Logger {
 		Appenders:  nil,
 	}
 
-	conf.AddLogger(category)
+	conf.AddNode(category)
 
 	category.prepare()
 
 	return category
 }
 
-func (conf *Config) AddLogger(category *Category) {
-	debugf("Adding logger: %+v", category)
+func (conf *Config) AddNode(category *Category) {
+	debugf("Adding node: %+v", category)
 
 	if len(category.Name) == 0 {
 		panic(errors.New("name cannot be empty"))

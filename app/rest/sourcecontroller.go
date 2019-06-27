@@ -12,7 +12,7 @@ import (
 	"reflect"
 )
 
-var logger = log4go.GetDefaultLogger()
+var logger = log4go.GetPackageLogger()
 
 func RegisterSourceRoutes(r repo.SourceRepo, g *gin.Engine) {
 

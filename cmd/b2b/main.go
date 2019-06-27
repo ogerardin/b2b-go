@@ -27,7 +27,7 @@ func init() {
 
 	configureLog4go()
 
-	log = log4go.GetDefaultLogger()
+	log = log4go.GetPackageLogger()
 
 	// pipe os.Stderr output to logger named "stderr" with ERROR level
 	logadapters.Feed(
@@ -41,8 +41,9 @@ func configureLog4go() {
 	//TODO move this to a configuration file
 	console := log4go.NewConsoleAppender()
 	stderrFile := log4go.NewFileAppender("stderr.log")
+
 	config := log4go.DefaultConfig()
-	config.AddLogger(&log4go.Category{
+	config.AddNode(&log4go.Category{
 		Name:       "mongo",
 		Priority:   logrus.DebugLevel,
 		Additivity: false,
@@ -50,7 +51,7 @@ func configureLog4go() {
 			console,
 		},
 	})
-	config.AddLogger(&log4go.Category{
+	config.AddNode(&log4go.Category{
 		Name:       "stderr",
 		Priority:   logrus.ErrorLevel,
 		Additivity: false,

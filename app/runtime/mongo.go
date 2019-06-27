@@ -21,7 +21,7 @@ func init() {
 		log.Println("Running under 'go test'")
 	}
 
-	log = log4go.GetDefaultLogger()
+	log = log4go.GetPackageLogger()
 }
 
 func DBServerProvider(lc fx.Lifecycle, conf *Configuration) *slavemongo.DBServer {

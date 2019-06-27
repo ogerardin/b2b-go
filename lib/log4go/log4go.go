@@ -39,8 +39,8 @@ func debugf(fmt string, args ...interface{}) {
 }
 
 // returns a Logger with a name based on the current method's package
-func GetDefaultLogger() Logger {
-	debugf("GetDefaultLogger")
+func GetPackageLogger() Logger {
+	debugf("GetPackageLogger")
 	pc, _, _, ok := runtime.Caller(1)
 	if !ok {
 		panic(errors.New("Failed to access call stack"))
@@ -49,8 +49,9 @@ func GetDefaultLogger() Logger {
 	funcName := runtime.FuncForPC(pc).Name()
 	parts := strings.Split(funcName, ".")
 	packageName := strings.Join(parts[0:len(parts)-1], ".")
+	loggerName := strings.ReplaceAll(packageName, "/", ".")
 
-	return GetLogger(packageName)
+	return GetLogger(loggerName)
 }
 
 func GetLogger(name string) Logger {
