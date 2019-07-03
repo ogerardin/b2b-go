@@ -10,8 +10,7 @@ import (
 
 // TODO This is the future definition of Appender. The current Appender (struct) is not generic enough
 type Appender interface {
-	Append(level logrus.Level, fields logrus.Fields, args ...interface{})
-	Appendf(level logrus.Level, fields logrus.Fields, fmt string, args ...interface{})
+	Append(level logrus.Level, fields logrus.Fields, msg string)
 }
 
 // an appender that uses an underlying logrus.FieldLogger
@@ -19,12 +18,8 @@ type LoggerAppender struct {
 	logrus.FieldLogger
 }
 
-func (l *LoggerAppender) Append(level logrus.Level, fields logrus.Fields, args ...interface{}) {
-	l.FieldLogger.WithFields(fields).Logln(level, args...)
-}
-
-func (l *LoggerAppender) Appendf(level logrus.Level, fields logrus.Fields, fmt string, args ...interface{}) {
-	l.FieldLogger.WithFields(fields).Logf(level, fmt, args...)
+func (l *LoggerAppender) Append(level logrus.Level, fields logrus.Fields, msg string) {
+	l.FieldLogger.WithFields(fields).Logln(level, msg)
 }
 
 func NewConsoleAppender() Appender {
