@@ -11,13 +11,13 @@ import (
 const UndefinedLevel = math.MaxUint32
 
 // TODO this struct should go away in favor of an interface (NewApender)
-type Appender struct {
+type Appender_obsolete struct {
 	name      string
 	Formatter logrus.Formatter
 	Writer    io.Writer
 }
 
-func (a *Appender) String() string {
+func (a *Appender_obsolete) String() string {
 	return a.name
 }
 
@@ -33,8 +33,8 @@ func DefaultConfig() *Config {
 		RootLogger: &Category{
 			Name:   "",
 			parent: nil,
-			Appenders: []*Appender{
-				NewConsoleAppender(),
+			Appenders: []*Appender_obsolete{
+				NewConsoleAppender_obsolete(),
 			},
 			Priority: logrus.DebugLevel,
 		},

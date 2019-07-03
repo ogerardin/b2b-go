@@ -9,24 +9,41 @@ import (
 )
 
 // TODO This is the future definition of Appender. The current Appender (struct) is not generic enough
-type NewAppender interface {
-	Append(level logrus.Level, fields logrus.Fields, message string)
+type Appender interface {
+	Append(level logrus.Level, fields logrus.Fields, args ...interface{})
+	Appendf(level logrus.Level, fields logrus.Fields, fmt string, args ...interface{})
 }
 
+// an appender that uses an underlying logrus.FieldLogger
 type LoggerAppender struct {
-	Logger
+	logrus.FieldLogger
 }
 
-func (l *LoggerAppender) Append(level logrus.Level, fields logrus.Fields, message string) {
-	l.Logger.WithFields(fields).Logln(level, message)
+func (l *LoggerAppender) Append(level logrus.Level, fields logrus.Fields, args ...interface{}) {
+	l.FieldLogger.WithFields(fields).Logln(level, args...)
 }
 
-func NewConsoleAppender() *Appender {
-	return &Appender{
+func (l *LoggerAppender) Appendf(level logrus.Level, fields logrus.Fields, fmt string, args ...interface{}) {
+	l.FieldLogger.WithFields(fields).Logf(level, fmt, args...)
+}
+
+func NewConsoleAppender() Appender {
+	return &LoggerAppender{
+		FieldLogger: &logrus.Logger{
+			Out: os.Stdout,
+			Formatter: &prefixed.TextFormatter{
+				ForceColors:     true,
+				ForceFormatting: true,
+				FullTimestamp:   true,
+			},
+			Level: 0,
+		},
+	}
+}
+
+func NewConsoleAppender_obsolete() *Appender_obsolete {
+	return &Appender_obsolete{
 		name: "Console",
-		//Formatter: &logrus.TextFormatter{
-		//	ForceColors: true,
-		//},
 		Formatter: &prefixed.TextFormatter{
 			ForceColors:     true,
 			ForceFormatting: true,
@@ -36,12 +53,26 @@ func NewConsoleAppender() *Appender {
 	}
 }
 
-func NewFileAppender(filename string) *Appender {
+func NewFileAppender(filename string) Appender {
 	file, err := os.OpenFile(filename, os.O_APPEND|os.O_CREATE|os.O_WRONLY, util.OS_ALL_RW)
 	if err != nil {
 		panic(errors.Wrapf(err, "Failed to open file %s for writing", filename))
 	}
-	return &Appender{
+	return &LoggerAppender{
+		FieldLogger: &logrus.Logger{
+			Out:       file,
+			Formatter: &logrus.TextFormatter{},
+			Level:     0,
+		},
+	}
+}
+
+func NewFileAppender_obsolete(filename string) *Appender_obsolete {
+	file, err := os.OpenFile(filename, os.O_APPEND|os.O_CREATE|os.O_WRONLY, util.OS_ALL_RW)
+	if err != nil {
+		panic(errors.Wrapf(err, "Failed to open file %s for writing", filename))
+	}
+	return &Appender_obsolete{
 		name:      "File: " + filename,
 		Formatter: &logrus.TextFormatter{},
 		Writer:    file,

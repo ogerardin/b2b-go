@@ -8,16 +8,14 @@ import (
 type Category struct {
 	Name       string
 	Priority   logrus.Level
-	Appenders  []*Appender
+	Appenders  []Appender
 	Additivity bool
 	//private
 	parent *Category
-	*CompositeLogger
+	Logger
 }
 
-var (
-	_ Logger = (*Category)(nil)
-)
+var _ Logger = (*Category)(nil)
 
 func (c *Category) getEffectivePriority() logrus.Level {
 	if c.Priority != UndefinedLevel {
@@ -30,7 +28,7 @@ func (c *Category) getEffectivePriority() logrus.Level {
 	return c.parent.getEffectivePriority()
 }
 
-func (c *Category) getEffectiveAppenders() []*Appender {
+func (c *Category) getEffectiveAppenders() []Appender {
 	appenders := c.Appenders
 	if !c.Additivity {
 		return appenders
@@ -47,28 +45,18 @@ func (c *Category) prepare() {
 	effectivePriority := c.getEffectivePriority()
 	debugf("  effective priority for %s: %s", c.Name, effectivePriority)
 
-	appenders := c.getEffectiveAppenders()
-	debugf("  effective appenders for %s: %s", c.Name, appenders)
+	effectiveAppenders := c.getEffectiveAppenders()
+	debugf("  effective appenders for %s: %s", c.Name, effectiveAppenders)
 
-	//for each appender, we create a matching FieldLogger
-	loggers := make([]logrus.FieldLogger, 0)
-	for _, appender := range appenders {
-		logger := &logrus.Logger{
-			Level:     effectivePriority,
-			Formatter: appender.Formatter,
-			Out:       appender.Writer,
-		}
-		loggers = append(loggers, logger)
-	}
+	ca := NewCompositeAppender(effectiveAppenders)
 
-	// all the FieldLoggers are grouped in a CompositeLogger
-	c.CompositeLogger = NewCompositeLogger(loggers...)
+	c.Logger = NewAppenderLogger(effectivePriority, ca)
 }
 
 func (c *Category) SetPriority(level logrus.Level) {
 	c.Priority = level
 }
 
-func (c *Category) AddAppender(appender *Appender) {
+func (c *Category) AddAppender(appender Appender) {
 	c.Appenders = append(c.Appenders, appender)
 }

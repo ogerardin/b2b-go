@@ -7,3 +7,9 @@ func Map(s []string, f func(string) string) []string {
 	}
 	return result
 }
+
+func MergeMaps(m1 map[string]interface{}, m2 map[string]interface{}) interface{} {
+	for k, v := range m2 {
+		m1[k] = v
+	}
+}
