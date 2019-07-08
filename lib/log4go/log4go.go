@@ -39,7 +39,7 @@ func debugf(fmt string, args ...interface{}) {
 }
 
 // returns a Logger with a name based on the current method's package
-func GetPackageLogger() Logger {
+func GetPackageLogger() FieldLogger {
 	debugf("GetPackageLogger")
 	pc, _, _, ok := runtime.Caller(1)
 	if !ok {
@@ -54,6 +54,6 @@ func GetPackageLogger() Logger {
 	return GetLogger(loggerName)
 }
 
-func GetLogger(name string) Logger {
+func GetLogger(name string) FieldLogger {
 	return getConfig().GetLogger(name)
 }

@@ -39,15 +39,15 @@ func init() {
 
 func configureLog4go() {
 	//TODO move this to a configuration file
-	console := log4go.NewConsoleAppender_obsolete()
-	stderrFile := log4go.NewFileAppender_obsolete("stderr.log")
+	console := log4go.NewConsoleAppender()
+	stderrFile := log4go.NewFileAppender("stderr.log")
 
 	config := log4go.DefaultConfig()
 	config.AddNode(&log4go.Category{
 		Name:       "mongo",
 		Priority:   logrus.DebugLevel,
 		Additivity: false,
-		Appenders: []*log4go.Appender_obsolete{
+		Appenders: []log4go.Appender{
 			console,
 		},
 	})
@@ -55,7 +55,7 @@ func configureLog4go() {
 		Name:       "stderr",
 		Priority:   logrus.ErrorLevel,
 		Additivity: false,
-		Appenders: []*log4go.Appender_obsolete{
+		Appenders: []log4go.Appender{
 			console,
 			stderrFile,
 		},

@@ -11,9 +11,9 @@ func Test(t *testing.T) {
 
 	logger := GetLogger("a.b.c")
 
-	logger.Debugln("bla")
+	logger.Debug("bla")
 
-	logger.Warnf("this is a warning: %s", "WARNING!")
+	logger.Warn("this is a warning: WARNING!")
 
 	logger.WithField("color", "blue").Info("We have a color")
 
@@ -22,8 +22,8 @@ func Test(t *testing.T) {
 func testConfig() {
 	debug = true
 
-	console := NewConsoleAppender_obsolete()
-	file := NewFileAppender_obsolete("test.log")
+	console := NewConsoleAppender()
+	file := NewFileAppender("test.log")
 
 	config = DefaultConfig()
 	config.getRootLogger().SetPriority(logrus.InfoLevel)
@@ -31,14 +31,14 @@ func testConfig() {
 	config.AddNode(&Category{
 		Name:       "a",
 		Priority:   logrus.InfoLevel,
-		Appenders:  []*Appender_obsolete{file},
+		Appenders:  []Appender{file},
 		Additivity: false,
 	},
 	)
 	config.AddNode(&Category{
 		Name:       "a.b",
 		Priority:   logrus.DebugLevel,
-		Appenders:  []*Appender_obsolete{console},
+		Appenders:  []Appender{console},
 		Additivity: true,
 	},
 	)

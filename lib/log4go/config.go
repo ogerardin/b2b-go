@@ -33,8 +33,8 @@ func DefaultConfig() *Config {
 		RootLogger: &Category{
 			Name:   "",
 			parent: nil,
-			Appenders: []*Appender_obsolete{
-				NewConsoleAppender_obsolete(),
+			Appenders: []Appender{
+				NewConsoleAppender(),
 			},
 			Priority: logrus.DebugLevel,
 		},
@@ -47,12 +47,12 @@ func loadConfig() *Config {
 	return DefaultConfig()
 }
 
-func (conf *Config) GetLogger(name string) Logger {
+func (conf *Config) GetLogger(name string) FieldLogger {
 	debugf("GetLogger('%s')", name)
 	logger, found := conf.Loggers[name]
 	if found {
 		debugf("  logger exists")
-		if logger.CompositeLogger == nil {
+		if logger.FieldLogger == nil {
 			logger.prepare()
 		}
 		return logger

@@ -3,21 +3,28 @@ package log4go
 import "github.com/sirupsen/logrus"
 
 // Basic logger interface
-type Logger interface {
+type SimpleLogger interface {
 	Debug(msg string)
 	Info(msg string)
-	Print(msg string)
 	Warn(msg string)
-	Warning(msg string)
 	Error(msg string)
 	Fatal(msg string)
-	Panic(msg string)
 }
 
 // A modified logrus.FieldLogger interface that does not depend on logrus.Entry
 type FieldLogger interface {
-	Logger
-	WithField(key string, value interface{}) Logger
-	WithFields(fields logrus.Fields) Logger
-	WithError(err error) Logger
+	SimpleLogger
+	WithField(key string, value interface{}) FieldLogger
+	WithFields(fields logrus.Fields) FieldLogger
+	WithError(err error) FieldLogger
+}
+
+// a logger where the log level is passed as a parameter
+type LevelLogger interface {
+	Log(level logrus.Level, msg string)
+}
+
+type Logger interface {
+	FieldLogger
+	LevelLogger
 }

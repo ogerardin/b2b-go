@@ -8,12 +8,14 @@ import (
 	"os"
 )
 
-// TODO This is the future definition of Appender. The current Appender (struct) is not generic enough
+// An Appender is just a target for logging messages that writes, stores or forwards a log entry.
+// It does not typically filter on the log level.
 type Appender interface {
 	Append(level logrus.Level, fields logrus.Fields, msg string)
 }
 
-// an appender that uses an underlying logrus.FieldLogger
+// an appender that uses an underlying logrus.FieldLogger to format and write log entries to
+// a io.Writer
 type LoggerAppender struct {
 	logrus.FieldLogger
 }
@@ -22,6 +24,7 @@ func (l *LoggerAppender) Append(level logrus.Level, fields logrus.Fields, msg st
 	l.FieldLogger.WithFields(fields).Logln(level, msg)
 }
 
+// Returns a newly instantiated LoggerAppender that writes log entries to the console.
 func NewConsoleAppender() Appender {
 	return &LoggerAppender{
 		FieldLogger: &logrus.Logger{
@@ -31,7 +34,7 @@ func NewConsoleAppender() Appender {
 				ForceFormatting: true,
 				FullTimestamp:   true,
 			},
-			Level: 0,
+			Level: logrus.TraceLevel,
 		},
 	}
 }
@@ -57,7 +60,7 @@ func NewFileAppender(filename string) Appender {
 		FieldLogger: &logrus.Logger{
 			Out:       file,
 			Formatter: &logrus.TextFormatter{},
-			Level:     0,
+			Level:     logrus.TraceLevel,
 		},
 	}
 }

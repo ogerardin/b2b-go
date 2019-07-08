@@ -12,10 +12,10 @@ type Category struct {
 	Additivity bool
 	//private
 	parent *Category
-	Logger
+	FieldLogger
 }
 
-var _ Logger = (*Category)(nil)
+var _ SimpleLogger = (*Category)(nil)
 
 func (c *Category) getEffectivePriority() logrus.Level {
 	if c.Priority != UndefinedLevel {
@@ -50,7 +50,7 @@ func (c *Category) prepare() {
 
 	ca := NewCompositeAppender(effectiveAppenders)
 
-	c.Logger = NewAppenderLogger(effectivePriority, ca)
+	c.FieldLogger = NewAppenderLogger(effectivePriority, ca)
 }
 
 func (c *Category) SetPriority(level logrus.Level) {

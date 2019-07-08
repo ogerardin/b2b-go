@@ -21,10 +21,9 @@ type appenderLoggerChainable struct {
 var _ Logger = (*appenderLoggerChainable)(nil)
 
 func (al *AppenderLogger) maybeAppend(level logrus.Level, msg string) {
-	if level < al.level {
-		return
+	if level >= al.level {
+		al.appender.Append(level, logrus.Fields{}, msg)
 	}
-	al.appender.Append(level, logrus.Fields{}, msg)
 }
 
 func (al *AppenderLogger) Debug(msg string) {
@@ -35,45 +34,31 @@ func (al *AppenderLogger) Info(msg string) {
 	al.maybeAppend(logrus.InfoLevel, msg)
 }
 
-func (al *AppenderLogger) Print(msg string) {
-	al.Info(msg)
-}
-
 func (al *AppenderLogger) Warn(msg string) {
 	al.maybeAppend(logrus.WarnLevel, msg)
 }
 
-func (al *AppenderLogger) Warning(msg string) {
-	al.Warn(msg)
+func (al *AppenderLogger) Fatal(msg string) {
+	al.Fatal(msg)
 }
 
 func (al *AppenderLogger) Error(msg string) {
 	al.maybeAppend(logrus.ErrorLevel, msg)
 }
 
-func (al *AppenderLogger) Fatal(msg string) {
-	al.maybeAppend(logrus.FatalLevel, msg)
-	//os.Exit(1)
-}
-
-func (al *AppenderLogger) Panic(msg string) {
-	al.maybeAppend(logrus.PanicLevel, msg)
-	//panic(fmt.Sprint(msg))
-}
-
 func (al *AppenderLogger) Log(level logrus.Level, msg string) {
 	al.maybeAppend(level, msg)
 }
 
-func (al *AppenderLogger) WithField(key string, value interface{}) Logger {
+func (al *AppenderLogger) WithField(key string, value interface{}) FieldLogger {
 	return al.WithFields(logrus.Fields{key: value})
 }
 
-func (al *AppenderLogger) WithError(err error) Logger {
+func (al *AppenderLogger) WithError(err error) FieldLogger {
 	return al.WithField(logrus.ErrorKey, err)
 }
 
-func (al *AppenderLogger) WithFields(fields logrus.Fields) Logger {
+func (al *AppenderLogger) WithFields(fields logrus.Fields) FieldLogger {
 	chainable := &appenderLoggerChainable{
 		AppenderLogger: al,
 		fields:         fields,
@@ -81,7 +66,7 @@ func (al *AppenderLogger) WithFields(fields logrus.Fields) Logger {
 	return chainable
 }
 
-func (chainable *appenderLoggerChainable) WithFields(fields logrus.Fields) Logger {
+func (chainable *appenderLoggerChainable) WithFields(fields logrus.Fields) FieldLogger {
 	util.MergeMaps(chainable.fields, fields)
 	return chainable
 }
