@@ -39,7 +39,7 @@ func (al *AppenderLogger) Warn(msg string) {
 }
 
 func (al *AppenderLogger) Fatal(msg string) {
-	al.Fatal(msg)
+	al.maybeAppend(logrus.FatalLevel, msg)
 }
 
 func (al *AppenderLogger) Error(msg string) {

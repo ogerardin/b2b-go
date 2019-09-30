@@ -37,11 +37,11 @@ func (mwa *MongoWriterAdapter) Write(p []byte) (n int, err error) {
 		levelChar := line[0]
 		level, found := levelMap[levelChar]
 		if found {
-			line = line[2:]
+			line = line[1:]
 		} else {
 			level = mwa.DefaultLevel
 		}
-		mwa.Logger.Log(level, line)
+		mwa.Logger.Log(level, strings.TrimSpace(line))
 	}
 	return len(p), nil
 }

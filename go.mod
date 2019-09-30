@@ -27,3 +27,5 @@ require (
 	gopkg.in/check.v1 v1.0.0-20180628173108-788fd7840127
 	gopkg.in/tomb.v2 v2.0.0-20161208151619-d5d1b5820637
 )
+
+go 1.13

@@ -75,10 +75,10 @@ func (dbs *DBServer) Start() {
 	args := []string{
 		"--bind_ip", "127.0.0.1",
 		"--port", strconv.Itoa(addr.Port),
-		"--nssize", "1",
-		"--noprealloc",
-		"--smallfiles",
-		"--nojournal",
+		//"--nssize", "1",
+		//"--noprealloc",
+		//"--smallfiles",
+		//"--nojournal",
 	}
 	if dbs.dbpath != "" {
 		args = append(args, "--dbpath", dbs.dbpath)
