@@ -2,23 +2,21 @@ package runtime
 
 import (
 	"b2b-go/lib/log4go"
-	"b2b-go/lib/log4go/logadapters"
 	slavemongo "b2b-go/lib/slave-mongo"
 	"b2b-go/lib/util"
 	"context"
 	"flag"
 	"github.com/globalsign/mgo"
-	"github.com/sirupsen/logrus"
 	"go.uber.org/fx"
 	"io/ioutil"
 	"os"
 )
 
-var log log4go.Logger
+var log log4go.FieldLogger
 
 func init() {
 	if flag.Lookup("test.v") != nil {
-		log.Println("Running under 'go test'")
+		log.Info("Running under 'go test'")
 	}
 
 	log = log4go.GetPackageLogger()
@@ -35,11 +33,11 @@ func DBServerProvider(lc fx.Lifecycle, conf *Configuration) *slavemongo.DBServer
 
 	server.SetPort(conf.MongoPort)
 
-	server.SetLogAdapter(&logadapters.MongoWriterAdapter{
-		Logger:       log4go.GetLogger("mongo"),
-		DefaultLevel: logrus.DebugLevel,
-	})
-
+	/*	server.SetLogAdapter(&logadapters.MongoWriterAdapter{
+			Logger:       &log4go.LevelLoggerAdapter{log4go.GetLogger("mongo")},
+			DefaultLevel: logrus.DebugLevel,
+		})
+	*/
 	lc.Append(fx.Hook{
 		OnStart: func(c context.Context) error {
 			log.Info("Starting slave Mongo server")

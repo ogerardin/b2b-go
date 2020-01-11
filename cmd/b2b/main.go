@@ -21,7 +21,7 @@ import (
 	"strings"
 )
 
-var log log4go.Logger
+var log log4go.FieldLogger
 
 func init() {
 
@@ -30,11 +30,12 @@ func init() {
 	log = log4go.GetPackageLogger()
 
 	// pipe os.Stderr output to logger named "stderr" with ERROR level
-	logadapters.Feed(
-		logadapters.CaptureStdErr(),
-		log4go.GetLogger("stderr"),
-		logrus.ErrorLevel,
-	)
+	/*	logadapters.Feed(
+			logadapters.CaptureStdErr(),
+			&log4go.LevelLoggerAdapter{log4go.GetLogger("stderr")},
+			logrus.ErrorLevel,
+		)
+	*/
 }
 
 func configureLog4go() {
@@ -89,7 +90,7 @@ func main() {
 
 	//fmt.Printf("%+v\n", conf)
 	confBytes, err := json.MarshalIndent(conf, " ", "  ")
-	log.Debugf("Conf %s", string(confBytes))
+	log.Debug(fmt.Sprintf("Conf %s", string(confBytes)))
 
 	// start the thing
 	startApp(conf)
@@ -99,7 +100,7 @@ func main() {
 func loadExternalConfig(conf *runtime.Configuration) error {
 	profiles := strings.Split(conf.Profiles, ",")
 	profiles = util.Map(profiles, strings.TrimSpace)
-	log.Infof("Active profiles: %v\n", profiles)
+	log.Info(fmt.Sprintf("Active profiles: %v\n", profiles))
 
 	s := staert.NewStaert(conf.Command)
 	s.AddSource(staert.NewTomlSource("b2b", []string{"./conf", "."}))
@@ -154,7 +155,10 @@ func startApp(conf *runtime.Configuration) error {
 	log := log4go.GetLogger("fx")
 
 	app := fx.New(
-		fx.Logger(log),
+		fx.Logger(&logadapters.PrinterAdapter{
+			Logger: &log4go.LevelLoggerAdapter{log},
+			Level:  logrus.InfoLevel,
+		}),
 
 		fx.Provide(func() *runtime.Configuration { return conf }),
 		fx.Provide(runtime.DBServerProvider),

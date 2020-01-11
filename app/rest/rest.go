@@ -12,11 +12,11 @@ func GinProvider() *gin.Engine {
 
 	gin.DefaultWriter = &logadapters.WriterAdapter{
 		Level:  logrus.InfoLevel,
-		Logger: log,
+		Logger: &log4go.LevelLoggerAdapter{log},
 	}
 	gin.DefaultErrorWriter = &logadapters.WriterAdapter{
 		Level:  logrus.ErrorLevel,
-		Logger: log,
+		Logger: &log4go.LevelLoggerAdapter{log},
 	}
 
 	// default instance without any middleware
