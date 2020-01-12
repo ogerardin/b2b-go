@@ -44,7 +44,7 @@ func testTargetRepoWithSession(t *testing.T, session *mgo.Session) {
 	//time.Sleep(time.Hour)
 }
 
-func saveTarget(t *testing.T, repo TargetRepo, target domain.BackupTarget) interface{} {
+func saveTarget(t *testing.T, repo TargetRepo, target domain.BackupTarget) string {
 	id, err := repo.SaveNew(target)
 	if err != nil {
 		t.Fatal(err)
@@ -53,7 +53,7 @@ func saveTarget(t *testing.T, repo TargetRepo, target domain.BackupTarget) inter
 	return id
 }
 
-func loadTarget(t *testing.T, repo TargetRepo, id interface{}) {
+func loadTarget(t *testing.T, repo TargetRepo, id string) {
 	loaded, err := repo.GetById(id)
 	if err != nil {
 		t.Fatal(err)

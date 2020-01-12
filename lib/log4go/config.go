@@ -3,23 +3,11 @@ package log4go
 import (
 	"github.com/pkg/errors"
 	"github.com/sirupsen/logrus"
-	"io"
 	"math"
 	"strings"
 )
 
 const UndefinedLevel = math.MaxUint32
-
-// TODO this struct should go away in favor of an interface (NewApender)
-type Appender_obsolete struct {
-	name      string
-	Formatter logrus.Formatter
-	Writer    io.Writer
-}
-
-func (a *Appender_obsolete) String() string {
-	return a.name
-}
 
 type Config struct {
 	RootLogger *Category
@@ -47,6 +35,8 @@ func loadConfig() *Config {
 	return DefaultConfig()
 }
 
+// Returns a logger by name. If a logger already exists for this name, it is returned.
+// Otherwise a new logger is created and configured according to the configuration
 func (conf *Config) GetLogger(name string) FieldLogger {
 	debugf("GetLogger('%s')", name)
 	logger, found := conf.Loggers[name]

@@ -41,12 +41,15 @@ func (c *Category) getEffectiveAppenders() []Appender {
 	return appenders
 }
 
+// Prepare the category for using as a Logger. Computes the effective priority and
+// effective list of Appenders using composition rules, then populates FieldLogger
+// with the actual logger
 func (c *Category) prepare() {
 	effectivePriority := c.getEffectivePriority()
 	debugf("  effective priority for %s: %s", c.Name, effectivePriority)
 
 	effectiveAppenders := c.getEffectiveAppenders()
-	debugf("  effective appenders for %s: %s", c.Name, effectiveAppenders)
+	debugf("  effective appenders for %s: %V", c.Name, effectiveAppenders)
 
 	ca := NewCompositeAppender(effectiveAppenders)
 

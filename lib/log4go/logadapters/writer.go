@@ -22,5 +22,5 @@ type PrinterAdapter struct {
 }
 
 func (pa *PrinterAdapter) Printf(f string, v ...interface{}) {
-	pa.Logger.Log(pa.Level, fmt.Sprint(v))
+	pa.Logger.Log(pa.Level, fmt.Sprint(v...))
 }
